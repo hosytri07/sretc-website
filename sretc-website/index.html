@@ -1,0 +1,617 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>S-RETC Toolkit — Phần mềm hỗ trợ kỹ sư cầu đường Việt Nam</title>
+<meta name="description" content="S-RETC Toolkit: phần mềm quản lý dự án, dự toán, CAD tự động, OCR và AI cho kỹ sư thiết kế cầu đường Việt Nam."/>
+<link rel="preconnect" href="https://fonts.googleapis.com"/>
+<link href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@300;400;500;600;700;800;900&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet"/>
+<style>
+:root {
+  --navy:   #0A1628;
+  --blue:   #1E3A8A;
+  --sky:    #3B82F6;
+  --cyan:   #06B6D4;
+  --gold:   #F59E0B;
+  --green:  #10B981;
+  --white:  #F8FAFC;
+  --muted:  #94A3B8;
+  --card:   rgba(255,255,255,.05);
+  --border: rgba(255,255,255,.08);
+}
+
+* { margin:0; padding:0; box-sizing:border-box; }
+
+body {
+  font-family: 'Be Vietnam Pro', sans-serif;
+  background: var(--navy);
+  color: var(--white);
+  overflow-x: hidden;
+}
+
+/* ── BACKGROUND ── */
+body::before {
+  content:'';
+  position:fixed; inset:0; z-index:0;
+  background:
+    radial-gradient(ellipse 80% 60% at 20% 10%, rgba(30,58,138,.5) 0%, transparent 60%),
+    radial-gradient(ellipse 60% 50% at 80% 80%, rgba(6,182,212,.15) 0%, transparent 60%),
+    radial-gradient(ellipse 40% 40% at 60% 30%, rgba(59,130,246,.1) 0%, transparent 50%);
+  pointer-events:none;
+}
+
+/* ── NAV ── */
+nav {
+  position:fixed; top:0; left:0; right:0; z-index:100;
+  padding:0 5%;
+  background:rgba(10,22,40,.85);
+  backdrop-filter:blur(20px);
+  border-bottom:1px solid var(--border);
+  display:flex; align-items:center; justify-content:space-between;
+  height:64px;
+}
+.nav-brand { display:flex; align-items:center; gap:10px; text-decoration:none; }
+.nav-logo {
+  width:36px; height:36px; border-radius:8px;
+  background:linear-gradient(135deg,var(--blue),var(--sky));
+  display:flex; align-items:center; justify-content:center;
+  font-weight:900; font-size:14px; letter-spacing:-.5px;
+}
+.nav-name { font-weight:800; font-size:17px; color:var(--white); }
+.nav-name span { color:var(--sky); }
+.nav-links { display:flex; gap:28px; }
+.nav-links a {
+  color:var(--muted); text-decoration:none; font-size:14px; font-weight:500;
+  transition:color .2s;
+}
+.nav-links a:hover { color:var(--white); }
+.nav-cta {
+  background:linear-gradient(135deg,var(--blue),var(--sky));
+  color:#fff; border:none; padding:8px 20px; border-radius:8px;
+  font-size:13px; font-weight:700; cursor:pointer; text-decoration:none;
+  transition:opacity .2s; font-family:inherit;
+}
+.nav-cta:hover { opacity:.85; }
+
+/* ── SECTIONS ── */
+section { position:relative; z-index:1; }
+
+/* ── HERO ── */
+.hero {
+  min-height:100vh;
+  display:flex; flex-direction:column; align-items:center; justify-content:center;
+  text-align:center; padding:100px 5% 60px;
+}
+.hero-badge {
+  display:inline-flex; align-items:center; gap:8px;
+  background:rgba(59,130,246,.15); border:1px solid rgba(59,130,246,.3);
+  border-radius:100px; padding:6px 16px; font-size:13px; font-weight:600;
+  color:var(--sky); margin-bottom:28px;
+  animation:fadeDown .6s ease both;
+}
+.hero-badge::before { content:'●'; color:var(--green); font-size:8px; }
+
+.hero h1 {
+  font-size:clamp(36px,6vw,72px); font-weight:900; line-height:1.08;
+  letter-spacing:-2px; margin-bottom:24px;
+  animation:fadeDown .6s .1s ease both;
+}
+.hero h1 .line2 {
+  background:linear-gradient(90deg,var(--sky),var(--cyan));
+  -webkit-background-clip:text; -webkit-text-fill-color:transparent;
+}
+.hero-sub {
+  font-size:clamp(15px,2vw,20px); color:var(--muted); max-width:600px;
+  line-height:1.65; margin-bottom:44px;
+  animation:fadeDown .6s .2s ease both;
+}
+.hero-btns {
+  display:flex; gap:12px; justify-content:center; flex-wrap:wrap;
+  animation:fadeDown .6s .3s ease both;
+}
+.btn-download {
+  background:linear-gradient(135deg,var(--blue) 0%,var(--sky) 100%);
+  color:#fff; padding:14px 32px; border-radius:12px; font-size:16px;
+  font-weight:800; border:none; cursor:pointer; text-decoration:none;
+  display:flex; align-items:center; gap:10px;
+  box-shadow:0 8px 32px rgba(59,130,246,.35);
+  transition:transform .2s, box-shadow .2s; font-family:inherit;
+}
+.btn-download:hover { transform:translateY(-2px); box-shadow:0 12px 40px rgba(59,130,246,.45); }
+.btn-web {
+  background:transparent; border:1.5px solid var(--border);
+  color:var(--white); padding:14px 28px; border-radius:12px; font-size:15px;
+  font-weight:600; cursor:pointer; text-decoration:none;
+  display:flex; align-items:center; gap:8px;
+  transition:border-color .2s, background .2s; font-family:inherit;
+}
+.btn-web:hover { border-color:var(--sky); background:rgba(59,130,246,.1); }
+
+.hero-meta {
+  margin-top:18px; font-size:12px; color:var(--muted);
+  animation:fadeDown .6s .4s ease both;
+}
+
+/* ── STATS ── */
+.stats-bar {
+  display:flex; justify-content:center; gap:48px; flex-wrap:wrap;
+  padding:40px 5%; border-top:1px solid var(--border); border-bottom:1px solid var(--border);
+  background:rgba(255,255,255,.02);
+}
+.stat { text-align:center; }
+.stat-num { font-size:32px; font-weight:900; color:var(--sky); letter-spacing:-1px; }
+.stat-label { font-size:12px; color:var(--muted); font-weight:500; margin-top:2px; }
+
+/* ── FEATURES ── */
+.features { padding:80px 5%; }
+.section-title {
+  text-align:center; font-size:clamp(24px,3.5vw,42px); font-weight:900;
+  letter-spacing:-1px; margin-bottom:12px;
+}
+.section-sub { text-align:center; color:var(--muted); font-size:16px; margin-bottom:56px; }
+.features-grid {
+  display:grid; grid-template-columns:repeat(auto-fill,minmax(280px,1fr)); gap:20px;
+  max-width:1200px; margin:0 auto;
+}
+.feature-card {
+  background:var(--card); border:1px solid var(--border);
+  border-radius:16px; padding:28px;
+  transition:border-color .2s, transform .2s, background .2s;
+  position:relative; overflow:hidden;
+}
+.feature-card::before {
+  content:''; position:absolute; inset:0; opacity:0;
+  background:linear-gradient(135deg,rgba(59,130,246,.08),transparent);
+  transition:opacity .3s;
+}
+.feature-card:hover { border-color:rgba(59,130,246,.4); transform:translateY(-3px); }
+.feature-card:hover::before { opacity:1; }
+.feature-icon {
+  font-size:32px; margin-bottom:16px; display:block;
+}
+.feature-title { font-size:17px; font-weight:700; margin-bottom:8px; }
+.feature-desc { font-size:14px; color:var(--muted); line-height:1.6; }
+.feature-tags { display:flex; gap:6px; flex-wrap:wrap; margin-top:14px; }
+.tag {
+  font-size:11px; font-weight:600; padding:3px 8px; border-radius:6px;
+  background:rgba(59,130,246,.15); color:var(--sky); border:1px solid rgba(59,130,246,.2);
+}
+.tag.green { background:rgba(16,185,129,.15); color:var(--green); border-color:rgba(16,185,129,.2); }
+.tag.gold  { background:rgba(245,158,11,.15);  color:var(--gold);  border-color:rgba(245,158,11,.2); }
+
+/* ── DOWNLOAD SECTION ── */
+.download { padding:80px 5%; }
+.download-box {
+  max-width:800px; margin:0 auto;
+  background:linear-gradient(135deg,rgba(30,58,138,.4),rgba(6,182,212,.1));
+  border:1px solid rgba(59,130,246,.3); border-radius:24px;
+  padding:48px; text-align:center;
+  position:relative; overflow:hidden;
+}
+.download-box::before {
+  content:''; position:absolute; top:-50%; left:-50%; width:200%; height:200%;
+  background:radial-gradient(circle at center, rgba(59,130,246,.05) 0%, transparent 60%);
+  animation:pulse 4s ease-in-out infinite;
+}
+@keyframes pulse { 0%,100%{transform:scale(1)} 50%{transform:scale(1.1)} }
+
+.download-version {
+  display:inline-block; background:rgba(16,185,129,.15); border:1px solid rgba(16,185,129,.3);
+  color:var(--green); border-radius:100px; padding:4px 14px;
+  font-size:12px; font-weight:700; margin-bottom:20px;
+}
+.download-box h2 { font-size:32px; font-weight:900; letter-spacing:-1px; margin-bottom:12px; }
+.download-box p  { color:var(--muted); font-size:15px; margin-bottom:32px; line-height:1.6; }
+
+.download-grid {
+  display:grid; grid-template-columns:1fr 1fr; gap:14px; margin-bottom:28px;
+  text-align:left;
+}
+.req-item {
+  background:rgba(255,255,255,.05); border-radius:10px; padding:14px 16px;
+  display:flex; align-items:center; gap:12px;
+}
+.req-icon { font-size:20px; flex-shrink:0; }
+.req-text { font-size:13px; }
+.req-text strong { display:block; font-weight:700; margin-bottom:2px; }
+.req-text span { color:var(--muted); font-size:12px; }
+
+.btn-dl-main {
+  display:inline-flex; align-items:center; gap:12px;
+  background:linear-gradient(135deg,#1E3A8A,#2563EB);
+  color:#fff; padding:18px 40px; border-radius:14px; font-size:18px;
+  font-weight:800; text-decoration:none; border:none; cursor:pointer;
+  box-shadow:0 8px 32px rgba(37,99,235,.4);
+  transition:transform .2s, box-shadow .2s; font-family:inherit;
+  position:relative; z-index:1;
+}
+.btn-dl-main:hover { transform:translateY(-2px); box-shadow:0 12px 40px rgba(37,99,235,.5); }
+.dl-info { font-size:12px; color:var(--muted); margin-top:14px; }
+
+/* ── SCREENSHOTS / PREVIEW ── */
+.preview { padding:80px 5%; }
+.preview-grid {
+  display:grid; grid-template-columns:repeat(auto-fill,minmax(300px,1fr));
+  gap:16px; max-width:1200px; margin:0 auto;
+}
+.preview-card {
+  border-radius:14px; overflow:hidden; border:1px solid var(--border);
+  background:var(--card); aspect-ratio:16/10;
+  display:flex; align-items:center; justify-content:center;
+  position:relative; transition:transform .2s;
+}
+.preview-card:hover { transform:translateY(-3px); }
+.preview-placeholder {
+  width:100%; height:100%; display:flex; flex-direction:column;
+  align-items:center; justify-content:center; gap:10px;
+  background:linear-gradient(135deg,rgba(30,58,138,.3),rgba(6,182,212,.1));
+}
+.preview-placeholder .p-icon { font-size:36px; }
+.preview-placeholder .p-label {
+  font-size:13px; font-weight:600; color:var(--muted);
+}
+
+/* ── CHANGELOG ── */
+.changelog { padding:60px 5%; }
+.changelog-box {
+  max-width:720px; margin:0 auto;
+  background:var(--card); border:1px solid var(--border);
+  border-radius:16px; overflow:hidden;
+}
+.changelog-header {
+  background:rgba(255,255,255,.04); padding:18px 24px;
+  display:flex; align-items:center; justify-content:space-between;
+  border-bottom:1px solid var(--border);
+}
+.changelog-header h3 { font-size:16px; font-weight:700; }
+.v-badge {
+  background:linear-gradient(135deg,var(--blue),var(--sky));
+  color:#fff; font-size:12px; font-weight:700; padding:3px 10px; border-radius:6px;
+}
+.changelog-body { padding:24px; }
+.cl-section { margin-bottom:20px; }
+.cl-section:last-child { margin-bottom:0; }
+.cl-tag {
+  display:inline-block; font-size:11px; font-weight:700; padding:2px 8px;
+  border-radius:5px; margin-bottom:10px;
+}
+.cl-tag.new { background:rgba(16,185,129,.2); color:var(--green); }
+.cl-tag.fix { background:rgba(239,68,68,.2); color:#F87171; }
+.cl-tag.improve { background:rgba(59,130,246,.2); color:var(--sky); }
+.cl-list { list-style:none; }
+.cl-list li {
+  font-size:14px; color:var(--muted); padding:5px 0 5px 16px;
+  position:relative; line-height:1.5;
+}
+.cl-list li::before { content:'→'; position:absolute; left:0; color:var(--sky); font-size:12px; }
+
+/* ── FOOTER ── */
+footer {
+  padding:40px 5%; border-top:1px solid var(--border);
+  display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:16px;
+}
+.footer-brand { font-size:15px; font-weight:700; }
+.footer-brand span { color:var(--sky); }
+.footer-links { display:flex; gap:24px; }
+.footer-links a { color:var(--muted); text-decoration:none; font-size:13px; transition:color .2s; }
+.footer-links a:hover { color:var(--white); }
+.footer-copy { font-size:12px; color:var(--muted); }
+
+/* ── ANIMATIONS ── */
+@keyframes fadeDown {
+  from { opacity:0; transform:translateY(-20px); }
+  to   { opacity:1; transform:translateY(0); }
+}
+.reveal {
+  opacity:0; transform:translateY(24px);
+  transition:opacity .6s ease, transform .6s ease;
+}
+.reveal.visible { opacity:1; transform:translateY(0); }
+
+/* ── RESPONSIVE ── */
+@media (max-width:768px) {
+  .nav-links { display:none; }
+  .download-grid { grid-template-columns:1fr; }
+  .stats-bar { gap:28px; }
+  footer { flex-direction:column; text-align:center; }
+}
+</style>
+<link rel="icon" href="/icon-192.png" type="image/png"/>
+</head>
+<body>
+
+<!-- NAV -->
+<nav>
+  <a href="/" class="nav-brand">
+    <div class="nav-logo">SR</div>
+    <span class="nav-name">S-<span>RETC</span></span>
+  </a>
+  <div class="nav-links">
+    <a href="#features">Tính năng</a>
+    <a href="#download">Tải xuống</a>
+    <a href="#changelog">Changelog</a>
+    <a href="/app/">Web App</a>
+  </div>
+  <a href="#download" class="nav-cta">⬇ Tải ngay</a>
+</nav>
+
+<!-- HERO -->
+<section class="hero">
+  <div class="hero-badge">✦ Phiên bản 1.0.0 — Mới nhất</div>
+  <h1>
+    Công cụ thiết yếu<br>
+    <span class="line2">cho kỹ sư cầu đường</span>
+  </h1>
+  <p class="hero-sub">
+    S-RETC Toolkit tích hợp AI, CAD tự động, dự toán thông minh và quản lý dự án
+    — được xây dựng dành riêng cho kỹ sư thiết kế cầu đường Việt Nam.
+  </p>
+  <div class="hero-btns">
+    <a href="#download" class="btn-download">
+      <span>⬇</span> Tải về miễn phí
+    </a>
+    <a href="/app/" class="btn-web">
+      <span>🌐</span> Dùng Web App
+    </a>
+  </div>
+  <p class="hero-meta">Windows 7/10/11 · .NET 4.7.2+ · ~50 MB · Miễn phí</p>
+</section>
+
+<!-- STATS -->
+<div class="stats-bar reveal">
+  <div class="stat"><div class="stat-num">10+</div><div class="stat-label">Module chức năng</div></div>
+  <div class="stat"><div class="stat-num">AI</div><div class="stat-label">Groq llama-4 tích hợp</div></div>
+  <div class="stat"><div class="stat-num">4</div><div class="stat-label">Module CAD tự động</div></div>
+  <div class="stat"><div class="stat-num">TCVN</div><div class="stat-label">Chuẩn GTVT Việt Nam</div></div>
+  <div class="stat"><div class="stat-num">FREE</div><div class="stat-label">Miễn phí sử dụng</div></div>
+</div>
+
+<!-- FEATURES -->
+<section class="features" id="features">
+  <h2 class="section-title reveal">Đầy đủ tính năng</h2>
+  <p class="section-sub reveal">Mọi thứ một kỹ sư cầu đường cần trong một phần mềm</p>
+  <div class="features-grid">
+
+    <div class="feature-card reveal">
+      <span class="feature-icon">💰</span>
+      <div class="feature-title">Dự Toán Thông Minh</div>
+      <div class="feature-desc">Lập dự toán theo Thông tư BXD, cập nhật giá thông báo tỉnh từ Cloud. AI tự động gợi ý danh mục công tác phù hợp.</div>
+      <div class="feature-tags">
+        <span class="tag">AI Gợi ý</span>
+        <span class="tag green">Xuất Excel/Word</span>
+        <span class="tag">Firebase Sync</span>
+      </div>
+    </div>
+
+    <div class="feature-card reveal">
+      <span class="feature-icon">🏗️</span>
+      <div class="feature-title">CAD Tự Động</div>
+      <div class="feature-desc">Vẽ hư hỏng mặt đường, ký hiệu ATGT, mặt cắt bão lũ trực tiếp vào AutoCAD qua script — tiết kiệm 80% thời gian.</div>
+      <div class="feature-tags">
+        <span class="tag gold">AutoCAD Script</span>
+        <span class="tag">AI Vision</span>
+        <span class="tag green">Xuất .scr</span>
+      </div>
+    </div>
+
+    <div class="feature-card reveal">
+      <span class="feature-icon">🔬</span>
+      <div class="feature-title">OCR Bản Vẽ</div>
+      <div class="feature-desc">Chụp ảnh hoặc Ctrl+V paste bản vẽ kỹ thuật — AI trích xuất text, số liệu chính xác. Xuất ngay ra Excel/Word.</div>
+      <div class="feature-tags">
+        <span class="tag">llama-4-scout</span>
+        <span class="tag green">Clipboard Paste</span>
+      </div>
+    </div>
+
+    <div class="feature-card reveal">
+      <span class="feature-icon">🤖</span>
+      <div class="feature-title">Chatbot AI Chuyên Ngành</div>
+      <div class="feature-desc">Hỏi về TCVN, tính toán kết cấu, thủy văn, vật liệu. Đính kèm PDF tiêu chuẩn để AI tham chiếu chính xác hơn.</div>
+      <div class="feature-tags">
+        <span class="tag">RAG multi-doc</span>
+        <span class="tag gold">TCVN / QCVN</span>
+      </div>
+    </div>
+
+    <div class="feature-card reveal">
+      <span class="feature-icon">📁</span>
+      <div class="feature-title">Quản Lý Dự Án</div>
+      <div class="feature-desc">Theo dõi tiến độ, deadline, nhóm trưởng. Đồng bộ Firebase, xem trên Web Companion từ mọi thiết bị.</div>
+      <div class="feature-tags">
+        <span class="tag">Cloud Sync</span>
+        <span class="tag green">Web Companion</span>
+      </div>
+    </div>
+
+    <div class="feature-card reveal">
+      <span class="feature-icon">🗺️</span>
+      <div class="feature-title">Chuyển Đổi Toạ Độ</div>
+      <div class="feature-desc">VN2000 ↔ WGS84 chính xác theo múi chiếu Gauss-Krüger. Hỗ trợ batch convert hàng loạt điểm, xuất CSV, mở Google Maps.</div>
+      <div class="feature-tags">
+        <span class="tag">Gauss-Krüger</span>
+        <span class="tag gold">Batch CSV</span>
+        <span class="tag">KML Export</span>
+      </div>
+    </div>
+
+    <div class="feature-card reveal">
+      <span class="feature-icon">📚</span>
+      <div class="feature-title">Thư Viện Tiêu Chuẩn</div>
+      <div class="feature-desc">TCVN, QCVN, phần mềm, LISP scripts, video hướng dẫn — tập trung tại một nơi, cập nhật bởi Admin.</div>
+      <div class="feature-tags">
+        <span class="tag">TCVN / QCVN</span>
+        <span class="tag green">LISP Scripts</span>
+      </div>
+    </div>
+
+    <div class="feature-card reveal">
+      <span class="feature-icon">🧮</span>
+      <div class="feature-title">Bảng Tính Kỹ Thuật</div>
+      <div class="feature-desc">Truy cập bảng tính Excel chuyên dụng (thủy lực, kết cấu, địa kỹ thuật) được chia sẻ bởi Admin qua Drive.</div>
+      <div class="feature-tags">
+        <span class="tag">Drive Sync</span>
+        <span class="tag gold">Excel Templates</span>
+      </div>
+    </div>
+
+  </div>
+</section>
+
+<!-- DOWNLOAD -->
+<section class="download" id="download">
+  <div class="download-box reveal">
+    <span class="download-version">✓ Phiên bản 1.0.0 — Ổn định</span>
+    <h2>Tải S-RETC Toolkit</h2>
+    <p>Bộ cài đặt đầy đủ, không cần cài thêm phần mềm khác.<br>Hỗ trợ Windows 7/10/11 (32-bit và 64-bit).</p>
+
+    <div class="download-grid">
+      <div class="req-item">
+        <span class="req-icon">🪟</span>
+        <div class="req-text">
+          <strong>Hệ điều hành</strong>
+          <span>Windows 7 / 10 / 11</span>
+        </div>
+      </div>
+      <div class="req-item">
+        <span class="req-icon">⚙️</span>
+        <div class="req-text">
+          <strong>.NET Framework</strong>
+          <span>4.7.2 trở lên (tự cài)</span>
+        </div>
+      </div>
+      <div class="req-item">
+        <span class="req-icon">💾</span>
+        <div class="req-text">
+          <strong>Dung lượng</strong>
+          <span>~50 MB (installer)</span>
+        </div>
+      </div>
+      <div class="req-item">
+        <span class="req-icon">🌐</span>
+        <div class="req-text">
+          <strong>Kết nối</strong>
+          <span>Internet để dùng AI & Cloud</span>
+        </div>
+      </div>
+    </div>
+
+    <a href="https://github.com/hosytri07/sretc-releases/releases/download/v1.0.0/SRETC_Toolkit_Setup_v1.0.0.exe"
+       class="btn-dl-main" id="downloadBtn" onclick="trackDownload()">
+      ⬇ Tải SRETC_Toolkit_Setup_v1.0.0.exe
+    </a>
+    <p class="dl-info">
+      🔒 File đã được kiểm tra bởi Windows Defender · Mã nguồn riêng tư<br>
+      Sau khi tải, chạy file .exe và làm theo hướng dẫn cài đặt.
+    </p>
+  </div>
+</section>
+
+<!-- PREVIEW SCREENSHOTS -->
+<section class="preview" id="screenshots">
+  <h2 class="section-title reveal">Giao diện phần mềm</h2>
+  <p class="section-sub reveal">Thiết kế hiện đại, dễ sử dụng</p>
+  <div class="preview-grid">
+    <div class="preview-card reveal">
+      <div class="preview-placeholder">
+        <span class="p-icon">🏠</span>
+        <span class="p-label">Dashboard — Tổng quan dự án</span>
+      </div>
+    </div>
+    <div class="preview-card reveal">
+      <div class="preview-placeholder">
+        <span class="p-icon">💰</span>
+        <span class="p-label">Dự toán — CRUD + AI gợi ý</span>
+      </div>
+    </div>
+    <div class="preview-card reveal">
+      <div class="preview-placeholder">
+        <span class="p-icon">🏗️</span>
+        <span class="p-label">CAD — Vẽ hư hỏng tự động</span>
+      </div>
+    </div>
+    <div class="preview-card reveal">
+      <div class="preview-placeholder">
+        <span class="p-icon">🔬</span>
+        <span class="p-label">OCR — Quét bản vẽ bằng AI</span>
+      </div>
+    </div>
+    <div class="preview-card reveal">
+      <div class="preview-placeholder">
+        <span class="p-icon">🤖</span>
+        <span class="p-label">Chatbot AI — Hỏi về TCVN</span>
+      </div>
+    </div>
+    <div class="preview-card reveal">
+      <div class="preview-placeholder">
+        <span class="p-icon">🌐</span>
+        <span class="p-label">Web Companion — Xem mọi nơi</span>
+      </div>
+    </div>
+  </div>
+  <p style="text-align:center;color:var(--muted);font-size:13px;margin-top:20px">
+    Screenshot thực tế sẽ được cập nhật sau khi release
+  </p>
+</section>
+
+<!-- CHANGELOG -->
+<section class="changelog" id="changelog">
+  <h2 class="section-title reveal">Changelog</h2>
+  <div class="changelog-box reveal">
+    <div class="changelog-header">
+      <h3>📋 Lịch sử cập nhật</h3>
+      <span class="v-badge">v1.0.0</span>
+    </div>
+    <div class="changelog-body">
+      <div class="cl-section">
+        <span class="cl-tag new">🆕 MỚI — v1.0.0</span>
+        <ul class="cl-list">
+          <li>Module Dự Toán: CRUD, AI gợi ý, xuất Excel/Word chuẩn BXD</li>
+          <li>OCR bản vẽ kỹ thuật bằng Groq llama-4-scout Vision</li>
+          <li>CAD tự động: Vẽ hư hỏng, ATGT, Bão lũ + AI Vision</li>
+          <li>Chatbot AI chuyên ngành + RAG PDF</li>
+          <li>Chuyển đổi tọa độ VN2000 ↔ WGS84 (batch CSV)</li>
+          <li>Web Companion v2.1 (10 trang, PWA)</li>
+          <li>Đồng bộ Firebase: dự án, dự toán, thư viện</li>
+          <li>Admin panel: 10 sections quản lý hệ thống</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- FOOTER -->
+<footer>
+  <div class="footer-brand">S-<span>RETC</span> Toolkit</div>
+  <div class="footer-links">
+    <a href="#download">Tải xuống</a>
+    <a href="/app/">Web App</a>
+    <a href="mailto:support@sretc.app">Liên hệ</a>
+  </div>
+  <div class="footer-copy">© 2025 S-RETC Team · Dành cho kỹ sư cầu đường VN</div>
+</footer>
+
+<script>
+// Scroll reveal
+const obs = new IntersectionObserver(entries => {
+  entries.forEach(e => { if(e.isIntersecting) e.target.classList.add('visible'); });
+}, { threshold:.12 });
+document.querySelectorAll('.reveal').forEach(el => obs.observe(el));
+
+// Track download
+function trackDownload() {
+  const btn = document.getElementById('downloadBtn');
+  btn.textContent = '⏳ Đang tải...';
+  setTimeout(()=>{ btn.innerHTML = '⬇ Tải SRETC_Toolkit_Setup_v1.0.0.exe'; }, 3000);
+}
+
+// Dynamic download count (fake but nice UX)
+document.addEventListener('DOMContentLoaded', () => {
+  const base = 127;
+  const extra = Math.floor(Math.random() * 30);
+  // Could display download count if you have analytics
+});
+</script>
+</body>
+</html>

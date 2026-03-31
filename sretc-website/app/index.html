@@ -1,0 +1,3114 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1"/>
+<meta name="theme-color" content="#0F172A"/>
+<meta name="description" content="S-RETC Toolkit Web Companion — Hỗ trợ kỹ sư cầu đường"/>
+<meta name="mobile-web-app-capable" content="yes"/>
+<meta name="apple-mobile-web-app-capable" content="yes"/>
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent"/>
+<meta name="apple-mobile-web-app-title" content="S-RETC"/>
+<link rel="manifest" href="manifest.json"/>
+<link rel="icon" href="icon-192.png" type="image/png"/>
+<link rel="apple-touch-icon" href="icon-192.png"/>
+<title>S-RETC Toolkit — Web</title>
+<style>
+/* ── Reset & Variables ────────────────────────────────────────── */
+*{margin:0;padding:0;box-sizing:border-box}
+:root{
+  --navy:   #0F172A;
+  --blue:   #1E3A8A;
+  --accent: #3B82F6;
+  --green:  #10B981;
+  --amber:  #F59E0B;
+  --red:    #EF4444;
+  --bg:     #F1F5F9;
+  --card:   #FFFFFF;
+  --border: #E2E8F0;
+  --text:   #1E293B;
+  --muted:  #64748B;
+  --font:   'Segoe UI','Roboto',sans-serif;
+  --radius: 10px;
+  --shadow: 0 1px 6px rgba(0,0,0,.08);
+}
+body{font-family:var(--font);background:var(--bg);color:var(--text);min-height:100vh;display:flex;flex-direction:column}
+
+/* ── Auth Screen ──────────────────────────────────────────────── */
+#authScreen{display:flex;align-items:center;justify-content:center;min-height:100vh;
+  background:linear-gradient(135deg,var(--navy) 0%,var(--blue) 100%)}
+.auth-card{background:#fff;border-radius:16px;padding:40px 36px;width:360px;
+  box-shadow:0 20px 60px rgba(0,0,0,.25)}
+.auth-logo{text-align:center;margin-bottom:28px}
+.auth-logo .brand{font-size:32px;font-weight:900;color:var(--blue)}
+.auth-logo .sub{font-size:12px;color:var(--muted);letter-spacing:2px;margin-top:2px}
+.auth-card h2{font-size:16px;font-weight:700;color:var(--text);margin-bottom:20px;text-align:center}
+.field{margin-bottom:14px}
+.field label{display:block;font-size:12px;font-weight:600;color:var(--muted);margin-bottom:5px}
+.field input{width:100%;height:40px;border:1.5px solid var(--border);border-radius:8px;
+  padding:0 12px;font-size:14px;transition:.15s}
+.field input:focus{outline:none;border-color:var(--accent)}
+.btn-primary{width:100%;height:42px;background:var(--blue);color:#fff;border:none;
+  border-radius:8px;font-size:14px;font-weight:700;cursor:pointer;transition:.15s;margin-top:6px}
+.btn-primary:hover{background:var(--accent)}
+#authMsg{font-size:12px;color:var(--red);text-align:center;margin-top:10px;min-height:18px;line-height:1.5}
+
+/* ── App Layout ───────────────────────────────────────────────── */
+#app{display:none;flex:1;flex-direction:column;height:100vh}
+
+/* Topbar */
+.topbar{background:var(--navy);color:#fff;height:52px;display:flex;align-items:center;
+  padding:0 20px;gap:16px;position:sticky;top:0;z-index:100;flex-shrink:0}
+.topbar .brand{font-size:18px;font-weight:900;color:#60A5FA;letter-spacing:.5px}
+.topbar .version{font-size:10px;color:#94A3B8;font-weight:600}
+.topbar-nav{display:flex;gap:4px;margin-left:8px;flex:1}
+.topbar-nav button{background:transparent;border:none;color:#94A3B8;padding:6px 12px;
+  border-radius:6px;font-size:13px;font-weight:600;cursor:pointer;transition:.15s;white-space:nowrap}
+.topbar-nav button:hover,.topbar-nav button.active{background:rgba(255,255,255,.12);color:#fff}
+.topbar-right{margin-left:auto;display:flex;align-items:center;gap:10px}
+.user-chip{background:rgba(255,255,255,.12);border-radius:20px;padding:4px 12px 4px 6px;
+  display:flex;align-items:center;gap:7px;cursor:pointer}
+.user-chip .avatar{width:26px;height:26px;background:var(--accent);border-radius:50%;
+  display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;color:#fff}
+.user-chip .name{font-size:12px;font-weight:600;color:#fff}
+.btn-sm{height:30px;padding:0 12px;border:none;border-radius:6px;
+  font-size:12px;font-weight:600;cursor:pointer;transition:.15s}
+.btn-logout{background:rgba(239,68,68,.2);color:#FCA5A5}
+.btn-logout:hover{background:rgba(239,68,68,.4)}
+
+/* Main area */
+.main-content{flex:1;overflow-y:auto;padding:24px}
+
+/* ── Pages ────────────────────────────────────────────────────── */
+.page{display:none}
+.page.active{display:block}
+.page-title{font-size:20px;font-weight:800;color:var(--blue);margin-bottom:20px;
+  display:flex;align-items:center;gap:8px}
+
+/* Dashboard */
+.stats-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(165px,1fr));gap:12px;margin-bottom:18px}
+.stat-card{background:var(--card);border:1px solid var(--border);border-radius:var(--radius);
+  padding:14px 16px;display:flex;align-items:center;gap:12px;box-shadow:var(--shadow);
+  transition:.2s;cursor:default}
+.stat-card:hover{transform:translateY(-2px);box-shadow:0 4px 16px rgba(0,0,0,.1)}
+.stat-icon{font-size:24px;line-height:1;flex-shrink:0}
+.stat-val{font-size:22px;font-weight:800;color:var(--text);line-height:1}
+.stat-label{font-size:11px;color:var(--muted);font-weight:600;margin-top:3px}
+.stat-badge{font-size:10px;font-weight:700;padding:1px 6px;border-radius:10px;margin-top:4px;display:inline-block}
+.badge-up{background:#D1FAE5;color:#065F46}
+.badge-warn{background:#FEF3C7;color:#92400E}
+.badge-down{background:#FEE2E2;color:#991B1B}
+.notice-bar{background:linear-gradient(90deg,#EFF6FF,#DBEAFE);border:1px solid #BFDBFE;
+  border-radius:var(--radius);padding:10px 16px;display:flex;align-items:center;gap:10px;margin-bottom:18px}
+.notice-bar .icon{font-size:18px}
+.notice-bar .text{font-size:13px;font-weight:600;color:var(--blue)}
+
+/* Charts */
+.chart-row{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:18px}
+.chart-card{background:var(--card);border:1px solid var(--border);border-radius:var(--radius);padding:14px;box-shadow:var(--shadow)}
+.chart-title{font-size:12px;font-weight:700;color:var(--blue);margin-bottom:10px;display:flex;align-items:center;gap:6px}
+.donut-wrap{display:flex;align-items:center;gap:14px}
+.donut-legend{display:flex;flex-direction:column;gap:5px;flex:1}
+.legend-item{display:flex;align-items:center;gap:6px;font-size:11px;color:var(--text)}
+.legend-dot{width:9px;height:9px;border-radius:50%;flex-shrink:0}
+.bar-chart{display:flex;flex-direction:column;gap:7px}
+.bar-row{display:flex;align-items:center;gap:7px;font-size:11px}
+.bar-label{width:80px;color:var(--muted);font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.bar-track{flex:1;height:12px;background:#F1F5F9;border-radius:6px;overflow:hidden}
+.bar-fill{height:100%;border-radius:6px;transition:.5s ease}
+.bar-val{width:28px;text-align:right;font-weight:700;font-size:10px;color:var(--muted)}
+
+/* Quick actions */
+.quick-actions{display:flex;gap:7px;margin-bottom:16px;flex-wrap:wrap}
+.qa-btn{height:32px;padding:0 12px;border:1.5px solid var(--border);border-radius:8px;
+  background:var(--card);font-size:11px;font-weight:600;cursor:pointer;transition:.15s;
+  color:var(--text);display:flex;align-items:center;gap:4px;white-space:nowrap}
+.qa-btn:hover{border-color:var(--accent);color:var(--accent);background:#EFF6FF}
+
+/* Activity feed */
+.activity-feed{background:var(--card);border:1px solid var(--border);border-radius:var(--radius);
+  padding:14px;box-shadow:var(--shadow)}
+.activity-item{display:flex;align-items:flex-start;gap:8px;padding:6px 0;border-bottom:1px solid var(--border)}
+.activity-item:last-child{border-bottom:none}
+.act-dot{width:7px;height:7px;border-radius:50%;flex-shrink:0;margin-top:4px}
+.act-text{font-size:12px;color:var(--text);flex:1;line-height:1.4}
+.act-time{font-size:10px;color:var(--muted);white-space:nowrap}
+
+/* Tooltip badge */
+.count-badge{background:var(--red);color:#fff;border-radius:10px;padding:1px 6px;font-size:10px;font-weight:700;margin-left:4px}
+
+/* Projects */
+.projects-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:16px}
+.proj-card{background:var(--card);border:1px solid var(--border);border-radius:var(--radius);
+  padding:16px;box-shadow:var(--shadow)}
+.proj-name{font-size:14px;font-weight:700;color:var(--text);margin-bottom:4px}
+.proj-meta{font-size:11px;color:var(--muted);margin-bottom:10px}
+.proj-status{display:inline-block;padding:2px 8px;border-radius:20px;font-size:11px;font-weight:600}
+.status-active{background:#DBEAFE;color:#1E40AF}
+.status-done{background:#D1FAE5;color:#065F46}
+.status-late{background:#FEE2E2;color:#991B1B}
+.prog-bar{height:5px;background:#F1F5F9;border-radius:3px;margin-top:10px;overflow:hidden}
+.prog-fill{height:100%;border-radius:3px;transition:.3s}
+
+/* Chatbot */
+.chat-container{background:var(--card);border:1px solid var(--border);border-radius:var(--radius);
+  display:flex;flex-direction:column;height:calc(100vh - 160px);box-shadow:var(--shadow)}
+.chat-messages{flex:1;overflow-y:auto;padding:20px;display:flex;flex-direction:column;gap:12px}
+.msg{max-width:75%;padding:10px 14px;border-radius:12px;font-size:14px;line-height:1.5}
+.msg-user{background:var(--blue);color:#fff;align-self:flex-end;border-bottom-right-radius:4px}
+.msg-bot{background:#F8FAFC;border:1px solid var(--border);color:var(--text);
+  align-self:flex-start;border-bottom-left-radius:4px}
+.msg-typing{color:var(--muted);font-style:italic}
+.chat-input-row{padding:16px;border-top:1px solid var(--border);display:flex;gap:10px}
+.chat-input-row input{flex:1;height:42px;border:1.5px solid var(--border);border-radius:8px;
+  padding:0 14px;font-size:14px}
+.chat-input-row input:focus{outline:none;border-color:var(--accent)}
+.chat-input-row button{height:42px;padding:0 18px;background:var(--blue);color:#fff;
+  border:none;border-radius:8px;font-weight:700;cursor:pointer}
+.chat-input-row button:hover{background:var(--accent)}
+#chatGroqKey{font-size:12px;color:var(--muted);padding:0 16px 10px;text-align:center}
+
+/* Library */
+.lib-tabs{display:flex;gap:8px;margin-bottom:18px;flex-wrap:wrap}
+.lib-tab{padding:7px 16px;border:1.5px solid var(--border);border-radius:20px;
+  background:#fff;font-size:13px;font-weight:600;cursor:pointer;transition:.15s;color:var(--muted)}
+.lib-tab.active{background:var(--blue);border-color:var(--blue);color:#fff}
+.lib-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:12px}
+.lib-item{background:var(--card);border:1px solid var(--border);border-radius:var(--radius);
+  padding:14px;display:flex;align-items:center;gap:12px;cursor:pointer;
+  transition:.15s;box-shadow:var(--shadow)}
+.lib-item:hover{border-color:var(--accent);transform:translateY(-1px)}
+.lib-item .icon{font-size:24px;flex-shrink:0}
+.lib-item .info .name{font-size:13px;font-weight:600;color:var(--text)}
+.lib-item .info .date{font-size:11px;color:var(--muted);margin-top:2px}
+.lib-item .arrow{margin-left:auto;color:var(--muted);font-size:16px}
+
+/* Map / Coordinates */
+.coord-panel{background:var(--card);border:1px solid var(--border);border-radius:var(--radius);
+  padding:24px;max-width:640px;box-shadow:var(--shadow)}
+.coord-row{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:16px}
+.coord-field label{display:block;font-size:12px;font-weight:600;color:var(--muted);margin-bottom:5px}
+.coord-field input{width:100%;height:38px;border:1.5px solid var(--border);border-radius:7px;
+  padding:0 10px;font-size:14px}
+.coord-field input:focus{outline:none;border-color:var(--accent)}
+.coord-btns{display:flex;gap:10px;margin-bottom:16px}
+.btn-convert{height:38px;padding:0 18px;background:var(--blue);color:#fff;border:none;
+  border-radius:7px;font-weight:600;font-size:13px;cursor:pointer}
+.btn-convert:hover{background:var(--accent)}
+.coord-result{background:#F8FAFC;border:1px solid var(--border);border-radius:8px;padding:14px;
+  font-size:13px;font-family:monospace;color:var(--text);min-height:60px;white-space:pre-line}
+
+/* Loading */
+.loading{text-align:center;padding:40px;color:var(--muted);font-size:14px}
+.spinner{display:inline-block;width:20px;height:20px;border:2px solid var(--border);
+  border-top-color:var(--accent);border-radius:50%;animation:spin .6s linear infinite;
+  margin-right:8px;vertical-align:middle}
+@keyframes spin{to{transform:rotate(360deg)}}
+
+/* ── Mobile Responsive ─────────────────────────────────────────── */
+@media (max-width: 768px) {
+  .topbar-nav { display:none }
+  .topbar { padding:0 12px }
+  .main-content { padding:12px }
+  .stats-grid { grid-template-columns:1fr 1fr }
+  .projects-grid,.lib-grid { grid-template-columns:1fr }
+  .coord-row { grid-template-columns:1fr }
+  .chat-container { height:calc(100vh - 130px) }
+  #pageProjects > div:first-child > div { grid-template-columns:1fr !important }
+  /* Hamburger menu for mobile */
+  .mobile-menu-btn { display:flex !important }
+  #mobileNav { display:flex }
+}
+@media (min-width: 769px) {
+  .mobile-menu-btn { display:none !important }
+  #mobileNav { display:none !important }
+}
+
+@keyframes slideIn{from{transform:translateY(20px);opacity:0}to{transform:translateY(0);opacity:1}}
+body.dark{--bg:#0F172A;--card:#1E293B;--border:#334155;--text:#E2E8F0;--muted:#94A3B8}
+body.dark .topbar{background:#020617}
+body.dark .auth-card{background:#1E293B;color:#E2E8F0}
+body.dark .field input{background:#0F172A;color:#E2E8F0;border-color:#334155}
+body.dark .proj-card,.dark .coord-panel,.dark .chat-container{background:#1E293B;border-color:#334155}
+body.dark .lib-item{background:#1E293B;border-color:#334155}
+body.dark .lib-item:hover{border-color:#60A5FA}
+body.dark textarea,body.dark input[type="text"],body.dark input[type="number"],body.dark input[type="date"],body.dark select{background:#1E293B;color:#E2E8F0;border-color:#334155}
+body.dark .msg-bot{background:#1E293B;border-color:#334155;color:#E2E8F0}
+body.dark .chart-card,.dark .activity-feed,.dark .stat-card{background:#1E293B;border-color:#334155}
+body.dark #editProjModal > div{background:#1E293B}
+</style>
+</head>
+<body>
+
+<!-- ══ AUTH SCREEN ════════════════════════════════════════════════ -->
+<div id="authScreen">
+  <div class="auth-card">
+    <div class="auth-logo">
+      <div class="brand">S-RETC</div>
+      <div class="sub">TOOLKIT WEB COMPANION</div>
+    </div>
+    <h2>Đăng nhập hệ thống</h2>
+    <div class="field">
+      <label>Tài khoản</label>
+      <input id="inpUser" type="text" placeholder="Nhập tên đăng nhập" autocomplete="username"
+        onkeydown="if(event.key==='Enter') document.getElementById('inpPass').focus()"/>
+    </div>
+    <div class="field">
+      <label>Mật khẩu</label>
+      <input id="inpPass" type="password" placeholder="Nhập mật khẩu" autocomplete="current-password"
+        onkeydown="if(event.key==='Enter') doLogin()"/>
+    </div>
+    <button class="btn-primary" onclick="doLogin()" id="btnLogin">🔐 Đăng nhập</button>
+    <div style="text-align:center;margin-top:12px">
+      <a href="#" onclick="showForgotPassword()" 
+         style="font-size:12px;color:#3B82F6;text-decoration:none;font-weight:600">
+        Quên mật khẩu?
+      </a>
+    </div>
+    <div id="authMsg"></div>
+    <div style="margin-top:16px;padding-top:16px;border-top:1px solid #F1F5F9;font-size:11px;color:#94A3B8;text-align:center;line-height:1.6">
+      Lần đầu đăng nhập cần Firebase Rules cho phép write.<br>
+      <a href="#" onclick="showRulesHelp()" style="color:#3B82F6;text-decoration:none;font-weight:600">📋 Xem hướng dẫn Firebase Rules</a>
+    </div>
+  </div>
+</div>
+
+<!-- Rules Help Modal -->
+<div id="rulesModal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.6);z-index:9999;align-items:center;justify-content:center">
+  <div style="background:#fff;border-radius:14px;padding:28px;max-width:480px;width:90%;box-shadow:0 20px 60px rgba(0,0,0,.3)">
+    <div style="font-size:18px;font-weight:800;color:#1E3A8A;margin-bottom:16px">📋 Firebase Rules — Kích hoạt lần đầu</div>
+    <p style="font-size:13px;color:#374151;margin-bottom:12px">Để web tự kích hoạt tài khoản lần đầu, cần cho phép write <strong>1 lần</strong>:</p>
+    <div style="background:#0F172A;border-radius:8px;padding:14px;font-size:12px;font-family:monospace;color:#E2E8F0;margin-bottom:16px;white-space:pre">{
+  "rules": {
+    "Library":    { ".read": true },
+    "SystemData": { ".read": true },
+    "Users": {
+      "$uid": {
+        ".read": true,
+        ".write": true
+      }
+    },
+    "Projects":  { "$uid": { ".read": true } },
+    "Estimates": { "$uid": { ".read": true } },
+    ".read": false,
+    ".write": false
+  }
+}</div>
+    <p style="font-size:12px;color:#EF4444;font-weight:600;margin-bottom:16px">⚠️ Sau khi tất cả user đã đăng nhập lần đầu → đổi ".write": false lại để bảo mật!</p>
+    <div style="display:flex;gap:10px">
+      <a href="https://console.firebase.google.com" target="_blank"
+         style="flex:1;height:38px;background:#1E3A8A;color:#fff;border-radius:8px;font-weight:700;font-size:13px;text-decoration:none;display:flex;align-items:center;justify-content:center">
+        Mở Firebase Console →
+      </a>
+      <button onclick="document.getElementById('rulesModal').style.display='none'"
+              style="height:38px;padding:0 16px;background:#F1F5F9;border:none;border-radius:8px;font-weight:600;cursor:pointer">
+        Đóng
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- ══ MAIN APP ════════════════════════════════════════════════════ -->
+<div id="app" style="display:none;flex:1;flex-direction:column">
+
+  <nav class="topbar">
+    <button class="mobile-menu-btn" onclick="toggleMobileMenu()"
+         style="background:transparent;border:none;color:#fff;font-size:20px;cursor:pointer;display:none;padding:4px 8px;margin-right:8px">☰</button>
+    <span class="brand">S-RETC</span>
+    <span class="version">WEB v2.0</span>
+    <div class="topbar-nav">
+      <button onclick="showPage('dash')" id="navDash" class="active" title="Dashboard (Ctrl+1)">🏠 Dashboard</button>
+      <button onclick="showPage('projects')" id="navProjects" title="Dự án (Ctrl+2)">📁 Dự án</button>
+      <button onclick="showPage('chat')" id="navChat" title="Chatbot AI (Ctrl+3)">🤖 Chatbot AI</button>
+      <button onclick="showPage('library')" id="navLib" title="Thư viện (Ctrl+4)">📚 Thư viện</button>
+      <button onclick="showPage('coords')" id="navCoords">🗺️ Toạ độ</button>
+      <button onclick="showPage('estimate')" id="navEstimate">💰 Dự toán</button>
+      <button onclick="showPage('profile')" id="navProfile">👤 Hồ sơ</button>
+      <button onclick="showPage('feedback')" id="navFeedback">💬 Góp ý</button>
+      <button onclick="showPage('report')" id="navReport">📋 Báo cáo</button>
+      <button onclick="showPage('admin')" id="navAdmin" style="display:none">🛡️ Admin <span id="fbBadge" style="display:none;background:#EF4444;color:#fff;border-radius:10px;padding:1px 6px;font-size:10px;font-weight:700;margin-left:4px">0</span></button>    </div>
+    <div class="topbar-right">
+      <div class="user-chip">
+        <div class="avatar" id="topAvatar">?</div>
+        <span class="name" id="topName">...</span>
+      </div>
+      <button class="btn-sm" onclick="toggleDark()"
+             style="background:rgba(255,255,255,.1);color:#CBD5E1" id="btnDark" title="Dark mode">🌙</button>
+      <button class="btn-sm btn-logout" onclick="doLogout()">Đăng xuất</button>
+    </div>
+  
+<!-- Mobile nav -->
+<div id="mobileNav" style="display:none;position:fixed;top:52px;left:0;right:0;
+     background:#0F172A;z-index:200;padding:8px 0;flex-direction:column;max-height:80vh;overflow-y:auto">
+  <button onclick="showPage('dash');toggleMobileMenu()" style="background:transparent;border:none;color:#CBD5E1;padding:12px 20px;font-size:14px;font-weight:600;text-align:left;cursor:pointer;width:100%">🏠 Dashboard</button>
+  <button onclick="showPage('projects');toggleMobileMenu()" style="background:transparent;border:none;color:#CBD5E1;padding:12px 20px;font-size:14px;font-weight:600;text-align:left;cursor:pointer;width:100%">📁 Dự án</button>
+  <button onclick="showPage('chat');toggleMobileMenu()" style="background:transparent;border:none;color:#CBD5E1;padding:12px 20px;font-size:14px;font-weight:600;text-align:left;cursor:pointer;width:100%">🤖 Chatbot AI</button>
+  <button onclick="showPage('library');toggleMobileMenu()" style="background:transparent;border:none;color:#CBD5E1;padding:12px 20px;font-size:14px;font-weight:600;text-align:left;cursor:pointer;width:100%">📚 Thư viện</button>
+  <button onclick="showPage('coords');toggleMobileMenu()" style="background:transparent;border:none;color:#CBD5E1;padding:12px 20px;font-size:14px;font-weight:600;text-align:left;cursor:pointer;width:100%">🗺️ Toạ độ</button>
+  <button onclick="showPage('estimate');toggleMobileMenu()" style="background:transparent;border:none;color:#CBD5E1;padding:12px 20px;font-size:14px;font-weight:600;text-align:left;cursor:pointer;width:100%">💰 Dự toán</button>
+  <button onclick="showPage('report');toggleMobileMenu()" style="background:transparent;border:none;color:#CBD5E1;padding:12px 20px;font-size:14px;font-weight:600;text-align:left;cursor:pointer;width:100%">📋 Báo cáo</button>
+  <button onclick="showPage('profile');toggleMobileMenu()" style="background:transparent;border:none;color:#CBD5E1;padding:12px 20px;font-size:14px;font-weight:600;text-align:left;cursor:pointer;width:100%">👤 Hồ sơ</button>
+  <button onclick="showPage('feedback');toggleMobileMenu()" style="background:transparent;border:none;color:#CBD5E1;padding:12px 20px;font-size:14px;font-weight:600;text-align:left;cursor:pointer;width:100%">💬 Góp ý</button>
+  <button id="mobileAdminBtn" onclick="showPage('admin');toggleMobileMenu()" style="display:none;background:transparent;border:none;color:#FCA5A5;padding:12px 20px;font-size:14px;font-weight:600;text-align:left;cursor:pointer;width:100%">🛡️ Admin</button>
+</div>
+</nav>
+
+<!-- Network offline banner -->
+<div id="offlineBanner" style="display:none;position:fixed;top:52px;left:0;right:0;z-index:400;
+  background:#EF4444;color:#fff;text-align:center;padding:8px;font-size:13px;font-weight:600">
+  📶 Mất kết nối mạng — Một số tính năng có thể không hoạt động
+</div>
+
+<!-- Scroll to top button -->
+<button id="scrollTopBtn" onclick="window.scrollTo({top:0,behavior:'smooth'})"
+  style="display:none;position:fixed;bottom:24px;right:24px;z-index:300;
+    width:42px;height:42px;border-radius:50%;background:#1E3A8A;color:#fff;
+    border:none;font-size:18px;cursor:pointer;box-shadow:0 4px 16px rgba(0,0,0,.2);
+    align-items:center;justify-content:center" title="Lên đầu trang">↑</button>
+
+  <div class="main-content">
+
+
+    <!-- DASHBOARD -->
+    <div id="pageDash" class="page active">
+      <div class="page-title" id="dashGreet">🏠 Dashboard</div>
+
+      <!-- Admin notice -->
+      <div id="noticeBar" class="notice-bar" style="display:none">
+        <span class="icon">📢</span>
+        <span class="text" id="noticeText"></span>
+        <span class="close" onclick="this.parentElement.style.display='none'">✕</span>
+      </div>
+
+      <!-- Quick actions -->
+      <div class="quick-actions">
+        <button class="qa-btn" onclick="showPage('projects')">📁 Xem dự án</button>
+        <button class="qa-btn" onclick="showPage('estimate')">💰 Dự toán</button>
+        <button class="qa-btn" onclick="showPage('chat')">🤖 Hỏi AI</button>
+        <button class="qa-btn" onclick="showPage('coords')">🗺️ Toạ độ</button>
+        <button class="qa-btn" onclick="showPage('library')">📚 Thư viện</button>
+        <button class="qa-btn" onclick="loadDashboard()" title="Làm mới">🔄</button>
+      </div>
+
+      <!-- Stats -->
+      <div class="stats-grid" id="statsGrid">
+        <div class="stat-card">
+          <span class="stat-icon">📁</span>
+          <div>
+            <div class="stat-val" id="statTotal">--</div>
+            <div class="stat-label">Tổng dự án</div>
+          </div>
+        </div>
+        <div class="stat-card">
+          <span class="stat-icon">⏳</span>
+          <div>
+            <div class="stat-val" id="statActive">--</div>
+            <div class="stat-label">Đang triển khai</div>
+          </div>
+        </div>
+        <div class="stat-card">
+          <span class="stat-icon">✅</span>
+          <div>
+            <div class="stat-val" id="statDone">--</div>
+            <div class="stat-label">Hoàn thành</div>
+          </div>
+        </div>
+        <div class="stat-card">
+          <span class="stat-icon">⚠️</span>
+          <div>
+            <div class="stat-val" id="statLate">--</div>
+            <div class="stat-label">Sắp hết hạn</div>
+            <div class="stat-badge badge-warn" id="lateBadge" style="display:none">!</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Charts row -->
+      <div class="chart-row" id="chartRow" style="display:none">
+        <!-- Donut: trạng thái -->
+        <div class="chart-card">
+          <div class="chart-title">📊 Phân bổ trạng thái</div>
+          <div class="donut-wrap">
+            <svg class="donut-svg" width="90" height="90" viewBox="0 0 90 90">
+              <circle cx="45" cy="45" r="36" fill="none" stroke="#F1F5F9" stroke-width="14"/>
+              <circle id="donutActive" cx="45" cy="45" r="36" fill="none"
+                stroke="#3B82F6" stroke-width="14" stroke-dasharray="0 226"
+                stroke-linecap="round" transform="rotate(-90 45 45)" style="transition:.6s"/>
+              <circle id="donutDone" cx="45" cy="45" r="36" fill="none"
+                stroke="#10B981" stroke-width="14" stroke-dasharray="0 226"
+                stroke-linecap="round" transform="rotate(-90 45 45)" style="transition:.6s"/>
+              <circle id="donutLate" cx="45" cy="45" r="36" fill="none"
+                stroke="#F59E0B" stroke-width="14" stroke-dasharray="0 226"
+                stroke-linecap="round" transform="rotate(-90 45 45)" style="transition:.6s"/>
+              <text x="45" y="49" text-anchor="middle" font-size="13" font-weight="800"
+                fill="#1E293B" id="donutCenter">--</text>
+            </svg>
+            <div class="donut-legend">
+              <div class="legend-item"><div class="legend-dot" style="background:#3B82F6"></div><span>Đang TK: <b id="lgActive">0</b></span></div>
+              <div class="legend-item"><div class="legend-dot" style="background:#10B981"></div><span>Hoàn thành: <b id="lgDone">0</b></span></div>
+              <div class="legend-item"><div class="legend-dot" style="background:#F59E0B"></div><span>Sắp hạn: <b id="lgLate">0</b></span></div>
+            </div>
+          </div>
+        </div>
+        <!-- Bar: tiến độ top projects -->
+        <div class="chart-card">
+          <div class="chart-title">📈 Tiến độ dự án</div>
+          <div class="bar-chart" id="barChart">
+            <div style="font-size:12px;color:var(--muted);text-align:center;padding:20px 0">Chưa có dữ liệu</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Project cards -->
+      <div style="font-size:12px;font-weight:700;color:var(--muted);margin-bottom:10px;letter-spacing:.5px">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px">
+        <div style="font-size:12px;font-weight:700;color:var(--muted);letter-spacing:.5px">
+          DỰ ÁN GẦN ĐÂY
+        </div>
+        <button onclick="showPage('projects')"
+          style="height:26px;padding:0 10px;background:#EFF6FF;color:#1E40AF;border:1.5px solid #BFDBFE;border-radius:6px;font-size:11px;font-weight:600;cursor:pointer">
+          Xem tất cả →
+        </button>
+      </div>
+      <div id="dashProjects" class="projects-grid"></div>
+
+      <!-- Footer info -->
+      <div style="margin-top:20px;padding:12px 16px;background:var(--card);border:1px solid var(--border);
+          border-radius:var(--radius);display:flex;align-items:center;justify-content:space-between;
+          font-size:11px;color:var(--muted);box-shadow:var(--shadow)">
+        <span>🚀 <strong>S-RETC Web Companion v2.1</strong> — Hỗ trợ kỹ sư cầu đường Việt Nam</span>
+        <span title="Phím tắt: Ctrl+1..9 chuyển trang, Escape đóng modal">⌨️ Ctrl+1..9 chuyển trang</span>
+      </div>
+    </div>
+
+    <!-- PROJECTS -->
+    <div id="pageProjects" class="page">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px">
+        <div class="page-title" style="margin-bottom:0">📁 Quản lý Dự án</div>
+        <div style="display:flex;gap:8px;align-items:center">
+          <!-- Search & Filter -->
+          <input id="projSearch" type="text" placeholder="🔍 Tìm dự án..."
+            oninput="filterProjects()"
+            style="height:32px;width:160px;border:1.5px solid #E2E8F0;border-radius:8px;padding:0 10px;font-size:12px"/>
+          <select id="projFilter" onchange="filterProjects()"
+            style="height:32px;border:1.5px solid #E2E8F0;border-radius:8px;padding:0 8px;font-size:12px;cursor:pointer">
+            <option value="all">Tất cả</option>
+            <option value="InProgress">Đang TK</option>
+            <option value="Completed">Hoàn thành</option>
+            <option value="late">Sắp hạn</option>
+          </select>
+          <button onclick="loadProjects()" style="height:32px;padding:0 12px;background:#EFF6FF;color:#1E40AF;border:1.5px solid #BFDBFE;border-radius:8px;font-size:12px;font-weight:600;cursor:pointer">🔄</button>
+        </div>
+      </div>
+
+      <!-- Add project form -->
+      <div style="background:#fff;border:1px solid #E2E8F0;border-radius:10px;padding:16px;margin-bottom:16px">
+        <div style="font-size:13px;font-weight:700;color:#1E3A8A;margin-bottom:12px">➕ Thêm Dự án mới</div>
+        <div style="display:grid;grid-template-columns:2fr 1fr 1fr 120px auto;gap:10px;align-items:end">
+          <div>
+            <div style="font-size:11px;font-weight:600;color:#64748B;margin-bottom:4px">Tên dự án *</div>
+            <input id="newProjName" placeholder="VD: Cầu Kỳ Lam, QL14B..." style="width:100%;height:36px;border:1.5px solid #E2E8F0;border-radius:7px;padding:0 10px;font-size:13px"/>
+          </div>
+          <div>
+            <div style="font-size:11px;font-weight:600;color:#64748B;margin-bottom:4px">Nhóm trưởng</div>
+            <input id="newProjLeader" placeholder="Tên kỹ sư..." style="width:100%;height:36px;border:1.5px solid #E2E8F0;border-radius:7px;padding:0 10px;font-size:13px"/>
+          </div>
+          <div>
+            <div style="font-size:11px;font-weight:600;color:#64748B;margin-bottom:4px">Deadline</div>
+            <input id="newProjDeadline" type="date" style="width:100%;height:36px;border:1.5px solid #E2E8F0;border-radius:7px;padding:0 10px;font-size:13px"/>
+          </div>
+          <div>
+            <div style="font-size:11px;font-weight:600;color:#64748B;margin-bottom:4px">Tiến độ (%)</div>
+            <input id="newProjPct" type="number" min="0" max="100" value="0"
+              style="width:100%;height:36px;border:1.5px solid #E2E8F0;border-radius:7px;padding:0 10px;font-size:13px"/>
+          </div>
+          <button onclick="addProject()" style="height:36px;padding:0 16px;background:#1E3A8A;color:#fff;border:none;border-radius:7px;font-weight:700;font-size:13px;cursor:pointer;white-space:nowrap">
+            💾 Lưu
+          </button>
+        </div>
+      </div>
+
+      <!-- Project count -->
+      <div style="font-size:11px;color:var(--muted);margin-bottom:10px;font-weight:600;letter-spacing:.4px">
+        <span id="projCountLabel">DỰ ÁN</span>
+      </div>
+
+      <div id="projList" class="projects-grid"><div class="loading"><span class="spinner"></span>Đang tải...</div></div>
+
+      <!-- Edit Project Modal -->
+      <div id="editProjModal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:500;align-items:center;justify-content:center">
+        <div style="background:#fff;border-radius:14px;padding:24px;width:440px;max-width:95vw;box-shadow:0 8px 40px rgba(0,0,0,.2)">
+          <div style="font-size:15px;font-weight:800;color:#1E3A8A;margin-bottom:16px">✏️ Chỉnh sửa dự án</div>
+          <input type="hidden" id="editProjId"/>
+          <div style="display:grid;gap:12px">
+            <div>
+              <div style="font-size:11px;font-weight:600;color:#64748B;margin-bottom:4px">Tên dự án *</div>
+              <input id="editProjName" style="width:100%;height:36px;border:1.5px solid #E2E8F0;border-radius:7px;padding:0 10px;font-size:13px"/>
+            </div>
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
+              <div>
+                <div style="font-size:11px;font-weight:600;color:#64748B;margin-bottom:4px">Nhóm trưởng</div>
+                <input id="editProjLeader" style="width:100%;height:36px;border:1.5px solid #E2E8F0;border-radius:7px;padding:0 10px;font-size:13px"/>
+              </div>
+              <div>
+                <div style="font-size:11px;font-weight:600;color:#64748B;margin-bottom:4px">Deadline</div>
+                <input id="editProjDeadline" type="date" style="width:100%;height:36px;border:1.5px solid #E2E8F0;border-radius:7px;padding:0 10px;font-size:13px"/>
+              </div>
+            </div>
+            <div>
+              <div style="font-size:11px;font-weight:600;color:#64748B;margin-bottom:4px">Tiến độ (%)</div>
+              <input id="editProjPct" type="number" min="0" max="100"
+                style="width:100%;height:36px;border:1.5px solid #E2E8F0;border-radius:7px;padding:0 10px;font-size:13px"/>
+            </div>
+            <div>
+              <div style="font-size:11px;font-weight:600;color:#64748B;margin-bottom:4px">Ghi chú / Công việc đang làm</div>
+              <input id="editProjNote" placeholder="VD: Đang thiết kế trụ T3..."
+                style="width:100%;height:36px;border:1.5px solid #E2E8F0;border-radius:7px;padding:0 10px;font-size:13px"/>
+            </div>
+          </div>
+          <div style="display:flex;gap:8px;margin-top:18px;justify-content:flex-end">
+            <button onclick="closeEditModal()" style="height:36px;padding:0 16px;background:#F3F4F6;color:#374151;border:1px solid #D1D5DB;border-radius:8px;font-weight:600;cursor:pointer">Hủy</button>
+            <button onclick="saveEditProject()" style="height:36px;padding:0 20px;background:#1E3A8A;color:#fff;border:none;border-radius:8px;font-weight:700;cursor:pointer">💾 Lưu thay đổi</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- CHATBOT -->
+    <div id="pageChat" class="page">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px">
+        <div class="page-title" style="margin-bottom:0">🤖 Chatbot AI S-RETC</div>
+        <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap">
+          <!-- Model selector -->
+          <select id="chatModel" style="height:30px;border:1.5px solid #E2E8F0;border-radius:6px;
+            padding:0 8px;font-size:11px;font-weight:600;color:#374151;cursor:pointer">
+            <option value="llama-3.3-70b-versatile">⚡ Llama 3.3 70B</option>
+            <option value="llama-3.1-8b-instant">🚀 Llama 3.1 8B (nhanh)</option>
+            <option value="llama-3.2-90b-text-preview">🧠 Llama 3.2 90B</option>
+            <option value="gemma2-9b-it">💎 Gemma 2 9B</option>
+          </select>
+          <!-- RAG button -->
+          <button onclick="toggleRagPanel()" id="btnRag"
+            style="height:30px;padding:0 10px;background:#F5F3FF;color:#7C3AED;border:1.5px solid #DDD6FE;
+              border-radius:6px;font-size:11px;font-weight:700;cursor:pointer">
+            📎 RAG <span id="ragCount" style="background:#7C3AED;color:#fff;border-radius:10px;padding:0 5px;margin-left:2px">0</span>
+          </button>
+          <button onclick="clearChat()"
+            style="height:30px;padding:0 10px;background:#FEE2E2;color:#DC2626;border:none;border-radius:6px;font-size:11px;font-weight:700;cursor:pointer">
+            🗑 Xoá
+          </button>
+          <button onclick="exportChat()"
+            style="height:30px;padding:0 10px;background:#F0FDF4;color:#065F46;border:1px solid #A7F3D0;border-radius:6px;font-size:11px;font-weight:600;cursor:pointer"
+            title="Xuất cuộc trò chuyện ra file .txt">
+            💾 Xuất
+          </button>
+        </div>
+      </div>
+
+      <!-- RAG Panel (toggle) -->
+      <div id="ragPanel" style="display:none;background:#F5F3FF;border:1.5px solid #DDD6FE;
+          border-radius:10px;padding:12px;margin-bottom:12px">
+        <div style="font-size:12px;font-weight:700;color:#5B21B6;margin-bottom:8px">
+          📎 Tài liệu tham khảo (RAG) — Chatbot sẽ dùng nội dung các file này để trả lời
+        </div>
+        <div id="ragFileList" style="display:flex;flex-wrap:wrap;gap:6px;margin-bottom:8px;min-height:28px">
+          <span style="font-size:11px;color:#9CA3AF;font-style:italic">Chưa có tài liệu nào. Dán URL Drive PDF bên dưới.</span>
+        </div>
+        <div style="display:flex;gap:6px">
+          <input id="ragUrlInput" placeholder="Dán URL Google Drive PDF (chia sẻ công khai)..."
+            style="flex:1;height:32px;border:1.5px solid #DDD6FE;border-radius:6px;padding:0 10px;font-size:12px"/>
+          <input id="ragNameInput" placeholder="Tên tài liệu" 
+            style="width:150px;height:32px;border:1.5px solid #DDD6FE;border-radius:6px;padding:0 10px;font-size:12px"/>
+          <button onclick="addRagDoc()" style="height:32px;padding:0 12px;background:#7C3AED;color:#fff;
+            border:none;border-radius:6px;font-size:11px;font-weight:700;cursor:pointer">➕ Thêm</button>
+          <button onclick="clearRag()" style="height:32px;padding:0 10px;background:#EDE9FE;color:#7C3AED;
+            border:1px solid #DDD6FE;border-radius:6px;font-size:11px;cursor:pointer">🗑 Xóa hết</button>
+        </div>
+        <div style="font-size:10px;color:#9CA3AF;margin-top:6px">
+          💡 Tip: Chia sẻ file PDF trên Google Drive → "Anyone with link" → copy link → dán vào đây
+        </div>
+      </div>
+
+      <!-- Quick prompt chips -->
+      <div style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:10px" id="quickPrompts">
+        <span style="font-size:11px;color:#9CA3AF;margin-right:2px;align-self:center">Hỏi nhanh:</span>
+        <button onclick="quickSend(this)" class="qa-btn" style="font-size:11px;height:26px">Công thức thủy lực cống tròn</button>
+        <button onclick="quickSend(this)" class="qa-btn" style="font-size:11px;height:26px">TCVN 4054 tải trọng xe</button>
+        <button onclick="quickSend(this)" class="qa-btn" style="font-size:11px;height:26px">Chiều dày mặt đường BTN</button>
+        <button onclick="quickSend(this)" class="qa-btn" style="font-size:11px;height:26px">Độ dốc dọc tối thiểu</button>
+        <button onclick="quickSend(this)" class="qa-btn" style="font-size:11px;height:26px">Tính moment dầm đơn</button>
+        <button onclick="quickSend(this)" class="qa-btn" style="font-size:11px;height:26px">Hệ số nền đất sét</button>
+      </div>
+
+      <div class="chat-container" style="height:calc(100vh - 290px)">
+        <div class="chat-messages" id="chatMessages">
+          <div class="msg msg-bot">Xin chào! Tôi là trợ lý AI S-RETC chuyên ngành cầu đường Việt Nam. 
+Bạn có thể hỏi về TCVN, tính toán kết cấu, dự toán, hoặc đính kèm tài liệu PDF qua nút <strong>📎 RAG</strong> để tôi đọc và tư vấn chính xác hơn.</div>
+        </div>
+        <div id="chatGroqKey" style="display:none;padding:8px 16px;background:#FEF3C7;font-size:12px;color:#92400E;font-weight:600">
+          ⚠️ Chưa có Groq API Key — Admin cần cấu hình tại Firebase SystemData/GroqApiKey
+        </div>
+        <div class="chat-input-row" style="gap:8px">
+          <textarea id="chatInput" rows="2" placeholder="Nhập câu hỏi... (Enter gửi, Shift+Enter xuống dòng)"
+            style="flex:1;border:1.5px solid #E2E8F0;border-radius:8px;padding:8px 12px;font-size:13px;
+              resize:none;font-family:inherit;line-height:1.4"
+            onkeydown="if(event.key==='Enter'&&!event.shiftKey){event.preventDefault();sendChat()}"></textarea>
+          <button onclick="sendChat()" style="height:52px;padding:0 18px;background:#1E3A8A;color:#fff;
+            border:none;border-radius:8px;font-weight:700;font-size:13px;cursor:pointer;white-space:nowrap">
+            Gửi ▶
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- LIBRARY -->
+    <div id="pageLibrary" class="page">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px">
+        <div class="page-title" style="margin-bottom:0">📚 Thư viện S-RETC</div>
+        <input id="libSearch" placeholder="🔍 Tìm tài liệu..." oninput="filterLib()"
+               style="height:34px;width:200px;border:1.5px solid #E2E8F0;border-radius:20px;
+                      padding:0 14px;font-size:13px"/>
+      </div>
+      <div class="lib-tabs">
+        <button class="lib-tab active" onclick="loadLib('TCVN',this)">📋 Tiêu chuẩn & Pháp luật</button>
+        <button class="lib-tab" onclick="loadLib('Software',this)">💿 Phần mềm</button>
+        <button class="lib-tab" onclick="loadLib('Video',this)">🎬 Video & IT Tricks</button>
+        <button class="lib-tab" onclick="loadLib('LISP',this)">📜 LISP Scripts</button>
+      </div>
+      <div id="libItems" class="lib-grid"><div class="loading"><span class="spinner"></span>Đang tải...</div></div>
+    </div>
+
+    <!-- COORDINATES -->
+    <div id="pageCoords" class="page">
+      <div class="page-title">🗺️ Chuyển đổi Toạ độ</div>
+
+      <!-- Tab selector -->
+      <div class="lib-tabs" style="margin-bottom:16px">
+        <button class="lib-tab active" onclick="coordTab('single',this)">🔢 Đơn lẻ</button>
+        <button class="lib-tab" onclick="coordTab('batch',this)">📋 Hàng loạt (CSV)</button>
+      </div>
+
+      <!-- Single convert -->
+      <div id="coordSingle">
+      <div class="coord-panel">
+        <h3 style="font-size:14px;font-weight:700;color:var(--blue);margin-bottom:16px">VN2000 → WGS84</h3>
+        <div class="coord-row">
+          <div class="coord-field"><label>X (m) — Bắc</label><input id="inpX" placeholder="594000" type="number"/></div>
+          <div class="coord-field"><label>Y (m) — Đông</label><input id="inpY" placeholder="1700000" type="number"/></div>
+        </div>
+        <div class="coord-row">
+          <div class="coord-field">
+            <label>Múi chiếu</label>
+            <select id="selMui" style="width:100%;height:38px;border:1.5px solid var(--border);border-radius:7px;padding:0 10px;font-size:14px">
+              <option value="105">Múi 3° — KTT 105° (Miền Trung/Nam)</option>
+              <option value="108">Múi 3° — KTT 108° (Đà Nẵng, Tây Nguyên)</option>
+              <option value="107.75">Múi 3° — KTT 107°45' (Hà Nội)</option>
+            </select>
+          </div>
+          <div class="coord-field">
+            <label>Tỉnh/Khu vực</label>
+            <select id="selTinh" style="width:100%;height:38px;border:1.5px solid var(--border);border-radius:7px;padding:0 10px;font-size:14px">
+              <option value="-191">Đà Nẵng / Miền Trung</option>
+              <option value="-191">Quảng Nam / Quảng Ngãi</option>
+              <option value="-191">TP.HCM / Miền Nam</option>
+              <option value="-191">Hà Nội / Miền Bắc</option>
+            </select>
+          </div>
+        </div>
+        <div class="coord-btns">
+          <button class="btn-convert" onclick="convertCoords()">▶ Chuyển VN2000 → WGS84</button>
+          <button class="btn-convert" style="background:#7C3AED" onclick="convertCoordsRev()">◀ WGS84 → VN2000</button>
+        </div>
+        <div style="display:flex;gap:8px;align-items:flex-start">
+          <div class="coord-result" id="coordResult" style="flex:1">Nhập toạ độ và bấm Chuyển để xem kết quả...</div>
+          <div style="display:flex;flex-direction:column;gap:4px;flex-shrink:0">
+            <button onclick="copyCoord('coordResult')"
+                    style="height:30px;padding:0 10px;background:#F1F5F9;border:1px solid #E2E8F0;border-radius:6px;font-size:11px;cursor:pointer;white-space:nowrap">
+              📋 Copy
+            </button>
+            <button onclick="openGoogleMaps()"
+                    style="height:30px;padding:0 10px;background:#EFF6FF;border:1px solid #BFDBFE;border-radius:6px;font-size:11px;cursor:pointer;color:#1E40AF;font-weight:600;white-space:nowrap">
+              🗺️ Maps
+            </button>
+          </div>
+        </div>
+
+        <hr style="margin:20px 0;border:none;border-top:1px solid var(--border)"/>
+        <h3 style="font-size:14px;font-weight:700;color:#7C3AED;margin-bottom:16px">WGS84 (Lat/Lng) → VN2000</h3>
+        <div class="coord-row">
+          <div class="coord-field"><label>Latitude (Vĩ độ)</label><input id="inpLat" placeholder="15.97..." type="number" step="0.000001" oninput="convertCoordsRev()"/></div>
+          <div class="coord-field"><label>Longitude (Kinh độ)</label><input id="inpLng" placeholder="108.2..." type="number" step="0.000001" oninput="convertCoordsRev()"/></div>
+        </div>
+        <div style="display:flex;gap:8px;align-items:flex-start;margin-top:8px">
+          <div id="coordResult2" class="coord-result" style="flex:1">Điền Lat/Lng để xem chuyển ngược sang VN2000...</div>
+          <button onclick="copyCoord('coordResult2')"
+                  style="height:30px;padding:0 10px;background:#F1F5F9;border:1px solid #E2E8F0;border-radius:6px;font-size:11px;cursor:pointer;flex-shrink:0">
+            📋 Copy
+          </button>
+        </div>
+      </div>
+      </div>
+
+      <!-- Batch convert -->
+      <div id="coordBatch" style="display:none">
+        <div class="coord-panel">
+          <div style="font-size:14px;font-weight:700;color:var(--blue);margin-bottom:10px">
+            📋 Chuyển đổi hàng loạt VN2000 → WGS84
+          </div>
+          <div style="font-size:12px;color:var(--muted);margin-bottom:12px">
+            Nhập danh sách điểm: mỗi dòng 1 điểm theo định dạng <code style="background:#F1F5F9;padding:1px 4px;border-radius:3px">Tên,X,Y</code>
+            hoặc <code style="background:#F1F5F9;padding:1px 4px;border-radius:3px">X,Y</code>
+          </div>
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:12px">
+            <div>
+              <div style="font-size:11px;font-weight:600;color:#374151;margin-bottom:6px">Múi chiếu</div>
+              <select id="batchMui" style="width:100%;height:34px;border:1.5px solid var(--border);border-radius:7px;padding:0 10px;font-size:13px">
+                <option value="105">KTT 105° (Miền Trung/Nam)</option>
+                <option value="108">KTT 108° (Đà Nẵng)</option>
+                <option value="107.75">KTT 107°45' (Hà Nội)</option>
+              </select>
+            </div>
+            <div>
+              <div style="font-size:11px;font-weight:600;color:#374151;margin-bottom:6px">Ví dụ định dạng</div>
+              <div style="font-size:11px;color:#9CA3AF;background:#F9FAFB;border:1px solid #E2E8F0;border-radius:6px;padding:6px 8px;font-family:monospace;line-height:1.6">
+                P1,594500,1760000<br>P2,594600,1760100<br>595000,1761000
+              </div>
+            </div>
+          </div>
+          <textarea id="batchInput" rows="8" placeholder="Nhập danh sách điểm VN2000 (X,Y hoặc Tên,X,Y)..."
+            style="width:100%;border:1.5px solid #E2E8F0;border-radius:8px;padding:10px;font-size:13px;
+              font-family:monospace;resize:vertical;margin-bottom:10px"></textarea>
+          <div style="display:flex;gap:8px;margin-bottom:14px">
+            <button onclick="runBatchConvert()"
+              style="height:38px;padding:0 20px;background:#1E3A8A;color:#fff;border:none;border-radius:8px;font-weight:700;cursor:pointer">
+              ▶ Chuyển đổi tất cả
+            </button>
+            <button onclick="exportBatchCSV()"
+              style="height:38px;padding:0 16px;background:#059669;color:#fff;border:none;border-radius:8px;font-weight:700;cursor:pointer">
+              📊 Xuất CSV
+            </button>
+            <button onclick="document.getElementById('batchInput').value='';document.getElementById('batchOutput').innerHTML=''"
+              style="height:38px;padding:0 14px;background:#F3F4F6;color:#374151;border:1px solid #D1D5DB;border-radius:8px;font-weight:600;cursor:pointer">
+              🗑 Xóa
+            </button>
+          </div>
+          <div id="batchOutput" style="font-size:12px;font-family:monospace;background:#F8FAFC;border:1px solid #E2E8F0;
+            border-radius:8px;padding:12px;min-height:60px;max-height:300px;overflow-y:auto;white-space:pre-wrap;line-height:1.6">
+            Kết quả sẽ hiện ở đây...
+          </div>
+        </div>
+      </div>
+    </div>
+        <h3 style="font-size:14px;font-weight:700;color:var(--blue);margin-bottom:16px">VN2000 → WGS84</h3>
+        <div class="coord-row">
+          <div class="coord-field"><label>X (m) — Bắc</label><input id="inpX" placeholder="594000" type="number"/></div>
+          <div class="coord-field"><label>Y (m) — Đông</label><input id="inpY" placeholder="1700000" type="number"/></div>
+        </div>
+        <div class="coord-row">
+          <div class="coord-field">
+            <label>Múi chiếu</label>
+            <select id="selMui" style="width:100%;height:38px;border:1.5px solid var(--border);border-radius:7px;padding:0 10px;font-size:14px">
+              <option value="105">Múi 3° — KTT 105° (Miền Trung/Nam)</option>
+              <option value="108">Múi 3° — KTT 108° (Đà Nẵng, Tây Nguyên)</option>
+              <option value="107.75">Múi 3° — KTT 107°45' (Hà Nội)</option>
+            </select>
+          </div>
+          <div class="coord-field">
+            <label>Tỉnh/Khu vực</label>
+            <select id="selTinh" style="width:100%;height:38px;border:1.5px solid var(--border);border-radius:7px;padding:0 10px;font-size:14px">
+              <option value="-191">Đà Nẵng / Miền Trung</option>
+              <option value="-191">Quảng Nam / Quảng Ngãi</option>
+              <option value="-191">TP.HCM / Miền Nam</option>
+              <option value="-191">Hà Nội / Miền Bắc</option>
+            </select>
+          </div>
+        </div>
+        <div class="coord-btns">
+          <button class="btn-convert" onclick="convertCoords()">▶ Chuyển VN2000 → WGS84</button>
+          <button class="btn-convert" style="background:#7C3AED" onclick="convertCoordsRev()">◀ WGS84 → VN2000</button>
+        </div>
+        <div style="display:flex;gap:8px;align-items:flex-start">
+          <div class="coord-result" id="coordResult" style="flex:1">Nhập toạ độ và bấm Chuyển để xem kết quả...</div>
+          <div style="display:flex;flex-direction:column;gap:4px;flex-shrink:0">
+            <button onclick="copyCoord('coordResult')"
+                    style="height:30px;padding:0 10px;background:#F1F5F9;border:1px solid #E2E8F0;border-radius:6px;font-size:11px;cursor:pointer;white-space:nowrap">
+              📋 Copy
+            </button>
+            <button onclick="openGoogleMaps()"
+                    style="height:30px;padding:0 10px;background:#EFF6FF;border:1px solid #BFDBFE;border-radius:6px;font-size:11px;cursor:pointer;color:#1E40AF;font-weight:600;white-space:nowrap">
+              🗺️ Maps
+            </button>
+          </div>
+        </div>
+
+        <hr style="margin:20px 0;border:none;border-top:1px solid var(--border)"/>
+        <h3 style="font-size:14px;font-weight:700;color:#7C3AED;margin-bottom:16px">WGS84 (Lat/Lng) → VN2000</h3>
+        <div class="coord-row">
+          <div class="coord-field"><label>Latitude (Vĩ độ)</label><input id="inpLat" placeholder="15.97..." type="number" step="0.000001" oninput="convertCoordsRev()"/></div>
+          <div class="coord-field"><label>Longitude (Kinh độ)</label><input id="inpLng" placeholder="108.2..." type="number" step="0.000001" oninput="convertCoordsRev()"/></div>
+        </div>
+        <div style="display:flex;gap:8px;align-items:flex-start;margin-top:8px">
+          <div id="coordResult2" class="coord-result" style="flex:1">Điền Lat/Lng để xem chuyển ngược sang VN2000...</div>
+          <button onclick="copyCoord('coordResult2')"
+                  style="height:30px;padding:0 10px;background:#F1F5F9;border:1px solid #E2E8F0;border-radius:6px;font-size:11px;cursor:pointer;flex-shrink:0">
+            📋 Copy
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- ESTIMATE (View only) -->
+    <div id="pageEstimate" class="page">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px">
+        <div class="page-title" style="margin-bottom:0">💰 Xem Dự toán</div>
+        <div style="display:flex;gap:8px;align-items:center">
+          <input id="estSearch" type="text" placeholder="🔍 Tìm dự toán..." oninput="filterEstimates()"
+            style="height:32px;width:180px;border:1.5px solid #E2E8F0;border-radius:8px;padding:0 10px;font-size:12px"/>
+          <button onclick="loadEstimate()" style="height:32px;padding:0 12px;background:#EFF6FF;color:#1E40AF;border:1.5px solid #BFDBFE;border-radius:8px;font-size:12px;font-weight:600;cursor:pointer">🔄</button>
+        </div>
+      </div>
+      <div style="background:#EFF6FF;border:1px solid #BFDBFE;border-radius:10px;padding:12px 16px;margin-bottom:16px;font-size:12px;color:#1E40AF;">
+        ℹ️ Trang web chỉ xem dự toán đã lưu từ Desktop. Để tạo/sửa, dùng <strong>S-RETC Desktop App</strong>.
+      </div>
+      <div style="font-size:11px;font-weight:600;color:var(--muted);margin-bottom:10px;letter-spacing:.4px" id="estCountLabel"></div>
+      <div id="estimateList" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(320px,1fr));gap:14px">
+        <div class="loading"><span class="spinner"></span>Đang tải...</div>
+      </div>
+    </div>
+
+    <!-- PROFILE -->
+    <div id="pageProfile" class="page">
+      <div class="page-title">👤 Hồ sơ tài khoản</div>
+      <div style="max-width:480px">
+        <div style="background:#fff;border:1px solid #E2E8F0;border-radius:12px;padding:28px;box-shadow:0 1px 6px rgba(0,0,0,.06)">
+          <!-- Avatar initials -->
+          <div style="width:72px;height:72px;border-radius:50%;background:#DBEAFE;border:3px solid #93C5FD;
+                      display:flex;align-items:center;justify-content:center;font-size:28px;font-weight:800;
+                      color:#1E3A8A;margin:0 auto 20px" id="profileAvatar">?</div>
+
+          <div style="display:grid;gap:14px">
+            <div>
+              <div style="font-size:11px;font-weight:600;color:#64748B;margin-bottom:4px">Tài khoản</div>
+              <div style="font-size:15px;font-weight:700;color:#0F172A" id="profileUsername">—</div>
+            </div>
+            <div>
+              <div style="font-size:11px;font-weight:600;color:#64748B;margin-bottom:4px">Họ và tên</div>
+              <input id="profileFullName" style="width:100%;height:38px;border:1.5px solid #E2E8F0;border-radius:8px;padding:0 12px;font-size:14px"/>
+            </div>
+            <div>
+              <div style="font-size:11px;font-weight:600;color:#64748B;margin-bottom:4px">Vai trò</div>
+              <div style="font-size:14px;color:#1E40AF;font-weight:600" id="profileRole">—</div>
+            </div>
+            <div style="border-top:1px solid #F1F5F9;padding-top:14px">
+              <div style="font-size:11px;font-weight:600;color:#64748B;margin-bottom:8px">Đổi mật khẩu</div>
+              <input id="profileNewPass" type="password" placeholder="Mật khẩu mới (bỏ trống nếu không đổi)"
+                     style="width:100%;height:38px;border:1.5px solid #E2E8F0;border-radius:8px;padding:0 12px;font-size:14px;margin-bottom:8px"/>
+              <input id="profileConfPass" type="password" placeholder="Xác nhận mật khẩu mới"
+                     style="width:100%;height:38px;border:1.5px solid #E2E8F0;border-radius:8px;padding:0 12px;font-size:14px"/>
+            </div>
+            <div style="border-top:1px solid #F1F5F9;padding-top:14px;margin-bottom:14px">
+              <div style="font-size:11px;font-weight:600;color:#64748B;margin-bottom:4px">Telegram Chat ID (để nhận OTP reset mật khẩu)</div>
+              <input id="profileTgId" placeholder="VD: 123456789 — Gửi /start cho bot để lấy ID"
+                     style="width:100%;height:38px;border:1.5px solid #E2E8F0;border-radius:8px;padding:0 12px;font-size:13px;margin-bottom:4px"/>
+              <div style="font-size:11px;color:#3B82F6">
+                💡 Chat với <strong>@sretc_bot</strong> và gửi <code>/start</code> → bot sẽ báo Chat ID của bạn
+              </div>
+            </div>
+            <button onclick="saveProfile()"
+                    style="height:40px;background:#1E3A8A;color:#fff;border:none;border-radius:8px;font-weight:700;font-size:14px;cursor:pointer">
+              💾 Lưu thay đổi
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- FEEDBACK -->
+    <div id="pageFeedback" class="page">
+      <div class="page-title">💬 Góp ý &amp; Báo lỗi</div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;max-width:900px">
+
+        <!-- Form gửi -->
+        <div style="background:#fff;border:1px solid #E2E8F0;border-radius:12px;padding:20px;box-shadow:0 1px 6px rgba(0,0,0,.06)">
+          <div style="font-size:14px;font-weight:700;color:#1E3A8A;margin-bottom:14px">✍️ Gửi phản hồi mới</div>
+          <div style="margin-bottom:12px">
+            <div style="font-size:11px;font-weight:600;color:#64748B;margin-bottom:5px">Phân loại</div>
+            <select id="fbType" style="width:100%;height:36px;border:1.5px solid #E2E8F0;border-radius:8px;padding:0 10px;font-size:13px">
+              <option>⚠️ Báo lỗi phần mềm</option>
+              <option>💡 Góp ý tính năng mới</option>
+              <option>🌐 Góp ý Web Companion</option>
+              <option>⭐ Đánh giá tính năng</option>
+              <option>💬 Khác...</option>
+            </select>
+          </div>
+          <div style="margin-bottom:12px">
+            <div style="font-size:11px;font-weight:600;color:#64748B;margin-bottom:5px">Mức độ ưu tiên</div>
+            <div style="display:flex;gap:6px">
+              <label style="display:flex;align-items:center;gap:4px;font-size:12px;cursor:pointer">
+                <input type="radio" name="fbPriority" value="Thấp" checked/> 🟢 Thấp
+              </label>
+              <label style="display:flex;align-items:center;gap:4px;font-size:12px;cursor:pointer">
+                <input type="radio" name="fbPriority" value="Trung bình"/> 🟡 Vừa
+              </label>
+              <label style="display:flex;align-items:center;gap:4px;font-size:12px;cursor:pointer">
+                <input type="radio" name="fbPriority" value="Cao"/> 🔴 Cao
+              </label>
+            </div>
+          </div>
+          <div style="margin-bottom:12px">
+            <div style="font-size:11px;font-weight:600;color:#64748B;margin-bottom:5px">Nội dung chi tiết *</div>
+            <textarea id="fbContent" rows="5" placeholder="Mô tả chi tiết vấn đề hoặc góp ý..."
+              style="width:100%;border:1.5px solid #E2E8F0;border-radius:8px;padding:10px 12px;
+                     font-size:13px;resize:vertical;font-family:inherit"></textarea>
+          </div>
+          <div style="background:#EFF6FF;border-radius:8px;padding:10px 14px;font-size:11px;color:#1E40AF;margin-bottom:14px">
+            ℹ️ Thông tin tài khoản sẽ được gửi kèm để Admin hỗ trợ tốt hơn.
+          </div>
+          <button onclick="sendFeedback()"
+            style="width:100%;height:40px;background:#D97706;color:#fff;border:none;border-radius:8px;font-weight:700;font-size:13px;cursor:pointer">
+            🚀 Gửi phản hồi
+          </button>
+        </div>
+
+        <!-- Lịch sử phản hồi của user -->
+        <div style="background:#fff;border:1px solid #E2E8F0;border-radius:12px;padding:20px;box-shadow:0 1px 6px rgba(0,0,0,.06)">
+          <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px">
+            <div style="font-size:14px;font-weight:700;color:#1E3A8A">📋 Phản hồi của tôi</div>
+            <button onclick="loadMyFeedbacks()"
+              style="height:28px;padding:0 10px;background:#EFF6FF;color:#1E40AF;border:1.5px solid #BFDBFE;border-radius:6px;font-size:11px;cursor:pointer">🔄</button>
+          </div>
+          <div id="myFeedbackList" style="display:flex;flex-direction:column;gap:8px;max-height:320px;overflow-y:auto">
+            <div class="loading"><span class="spinner"></span>Đang tải...</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ADMIN -->
+    <div id="pageAdmin" class="page">
+      <div class="page-title">🛡️ Quản trị hệ thống</div>
+
+      <!-- Tabs -->
+      <div class="lib-tabs" style="margin-bottom:16px">
+        <button class="lib-tab active" onclick="adminTab('feedbacks',this)">💬 Phản hồi <span id="fbBadgeTab" style="display:none;background:#EF4444;color:#fff;border-radius:10px;padding:0 5px;font-size:10px;margin-left:2px">0</span></button>
+        <button class="lib-tab" onclick="adminTab('users',this)">👥 Users</button>
+        <button class="lib-tab" onclick="adminTab('notice',this)">📢 Thông báo</button>
+        <button class="lib-tab" onclick="adminTab('apikeys',this)">🔑 API Keys</button>
+        <button class="lib-tab" onclick="adminTab('calc',this)">🧮 Bảng tính</button>
+        <button class="lib-tab" onclick="adminTab('library',this)">📚 Thư viện</button>
+        <button class="lib-tab" onclick="adminTab('stats',this)">📊 Thống kê</button>
+      </div>
+
+      <!-- Feedbacks -->
+      <div id="adminFeedbacks">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px">
+          <span style="font-size:13px;font-weight:600;color:#374151">Danh sách phản hồi từ users</span>
+          <button onclick="loadAdminFeedbacks()" style="height:28px;padding:0 10px;background:#EFF6FF;color:#1E40AF;border:1.5px solid #BFDBFE;border-radius:6px;font-size:11px;cursor:pointer">🔄 Làm mới</button>
+        </div>
+        <div id="fbList" style="display:flex;flex-direction:column;gap:8px">
+          <div class="loading"><span class="spinner"></span>Đang tải...</div>
+        </div>
+      </div>
+
+      <!-- Users -->
+      <div id="adminUsers" style="display:none">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px">
+          <span style="font-size:13px;font-weight:600;color:#374151">Quản lý tài khoản</span>
+          <button onclick="loadAdminUsers()" style="height:28px;padding:0 10px;background:#EFF6FF;color:#1E40AF;border:1.5px solid #BFDBFE;border-radius:6px;font-size:11px;cursor:pointer">🔄 Làm mới</button>
+        </div>
+        <div id="userList" style="background:#fff;border:1px solid #E2E8F0;border-radius:10px;overflow:hidden">
+          <div class="loading"><span class="spinner"></span>Đang tải...</div>
+        </div>
+      </div>
+
+      <!-- Notice -->
+      <div id="adminNotice" style="display:none;max-width:600px">
+        <div style="background:#fff;border:1px solid #E2E8F0;border-radius:10px;padding:20px">
+          <div style="font-size:13px;font-weight:700;color:#374151;margin-bottom:8px">📢 Thông báo hiển thị trên Dashboard của tất cả users:</div>
+          <textarea id="noticeInput" rows="4" placeholder="VD: Hệ thống bảo trì ngày 15/03/2026 từ 22:00-23:00..."
+            style="width:100%;border:1.5px solid #E2E8F0;border-radius:8px;padding:10px;font-size:13px;font-family:inherit;resize:vertical;margin-bottom:12px"></textarea>
+          <div style="display:flex;gap:10px">
+            <button onclick="saveNotice()" style="height:36px;padding:0 20px;background:#1E3A8A;color:#fff;border:none;border-radius:8px;font-weight:700;cursor:pointer">💾 Lưu thông báo</button>
+            <button onclick="clearNotice()" style="height:36px;padding:0 14px;background:#FEE2E2;color:#DC2626;border:none;border-radius:8px;font-weight:600;cursor:pointer">🗑 Xóa</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- API Keys -->
+      <div id="adminApikeys" style="display:none;max-width:600px">
+        <div style="background:#fff;border:1px solid #E2E8F0;border-radius:10px;padding:20px">
+          <div style="font-size:13px;font-weight:700;color:#374151;margin-bottom:16px">🔑 Cấu hình API Keys (lưu Firebase SystemData)</div>
+          <div id="apiKeysList" style="display:flex;flex-direction:column;gap:12px">
+            <div class="loading"><span class="spinner"></span>Đang tải...</div>
+          </div>
+          <button onclick="saveApiKeys()" style="margin-top:16px;height:38px;padding:0 24px;background:#1E3A8A;color:#fff;border:none;border-radius:8px;font-weight:700;cursor:pointer">
+            💾 Lưu tất cả API Keys
+          </button>
+        </div>
+      </div>
+
+      <!-- Stats -->
+      <div id="adminStats" style="display:none">
+        <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:14px" id="adminStatsGrid">
+          <div class="loading"><span class="spinner"></span>Đang tải thống kê...</div>
+        </div>
+      </div>
+
+      <!-- Library Management -->
+      <div id="adminLibrary" style="display:none">
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px">
+          <!-- Add new item form -->
+          <div>
+            <div style="font-size:13px;font-weight:700;color:#374151;margin-bottom:12px">➕ Thêm tài liệu mới</div>
+            <div style="background:#fff;border:1px solid #E2E8F0;border-radius:10px;padding:16px">
+              <div style="margin-bottom:10px">
+                <div style="font-size:11px;font-weight:600;color:#374151;margin-bottom:4px">Danh mục *</div>
+                <select id="libAdminCat" style="width:100%;height:34px;border:1.5px solid #E2E8F0;border-radius:6px;padding:0 10px;font-size:13px">
+                  <option value="TCVN">📋 Tiêu chuẩn & Pháp luật</option>
+                  <option value="Software">💿 Phần mềm</option>
+                  <option value="Video">🎬 Video & IT Tricks</option>
+                  <option value="LISP">📜 LISP Scripts</option>
+                </select>
+              </div>
+              <div style="margin-bottom:10px">
+                <div style="font-size:11px;font-weight:600;color:#374151;margin-bottom:4px">Tên tài liệu *</div>
+                <input id="libAdminName" placeholder="VD: TCVN 4054:2005 — Đường ô tô" style="width:100%;height:34px;border:1.5px solid #E2E8F0;border-radius:6px;padding:0 10px;font-size:13px"/>
+              </div>
+              <div style="margin-bottom:10px">
+                <div style="font-size:11px;font-weight:600;color:#374151;margin-bottom:4px">Google Drive Link *</div>
+                <input id="libAdminLink" placeholder="https://drive.google.com/..." style="width:100%;height:34px;border:1.5px solid #E2E8F0;border-radius:6px;padding:0 10px;font-size:13px"/>
+              </div>
+              <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:10px">
+                <div>
+                  <div style="font-size:11px;font-weight:600;color:#374151;margin-bottom:4px">Mô tả ngắn</div>
+                  <input id="libAdminDesc" placeholder="Nội dung chính..." style="width:100%;height:34px;border:1.5px solid #E2E8F0;border-radius:6px;padding:0 10px;font-size:12px"/>
+                </div>
+                <div>
+                  <div style="font-size:11px;font-weight:600;color:#374151;margin-bottom:4px">Kích thước</div>
+                  <input id="libAdminSize" placeholder="VD: 2.5 MB" style="width:100%;height:34px;border:1.5px solid #E2E8F0;border-radius:6px;padding:0 10px;font-size:12px"/>
+                </div>
+              </div>
+              <div style="margin-bottom:12px">
+                <div style="font-size:11px;font-weight:600;color:#374151;margin-bottom:4px">Tác giả / Nguồn</div>
+                <input id="libAdminAuthor" placeholder="VD: Bộ GTVT, TCVN..." style="width:100%;height:34px;border:1.5px solid #E2E8F0;border-radius:6px;padding:0 10px;font-size:12px"/>
+              </div>
+              <button onclick="adminAddLibItem()"
+                style="width:100%;height:38px;background:#1E3A8A;color:#fff;border:none;border-radius:8px;font-weight:700;font-size:13px;cursor:pointer">
+                💾 Thêm vào Thư viện
+              </button>
+            </div>
+          </div>
+          <!-- Current items preview -->
+          <div>
+            <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px">
+              <div style="font-size:13px;font-weight:700;color:#374151">📋 Tài liệu hiện có</div>
+              <select id="libAdminViewCat" onchange="loadAdminLibPreview()"
+                style="height:28px;border:1px solid #E2E8F0;border-radius:6px;padding:0 8px;font-size:12px">
+                <option value="TCVN">TCVN</option>
+                <option value="Software">Software</option>
+                <option value="Video">Video</option>
+                <option value="LISP">LISP</option>
+              </select>
+            </div>
+            <div id="libAdminPreview" style="max-height:360px;overflow-y:auto;display:flex;flex-direction:column;gap:6px">
+              <div class="loading"><span class="spinner"></span></div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Bảng tính submissions -->
+      <div id="adminCalc" style="display:none">
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px">
+
+          <!-- Danh sách submissions -->
+          <div>
+            <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px">
+              <span style="font-size:13px;font-weight:700;color:#374151">📥 Yêu cầu từ users</span>
+              <button onclick="loadCalcSubmissions()" style="height:28px;padding:0 10px;background:#EFF6FF;color:#1E40AF;border:1.5px solid #BFDBFE;border-radius:6px;font-size:11px;cursor:pointer">🔄</button>
+            </div>
+            <div id="calcSubList" style="display:flex;flex-direction:column;gap:6px;max-height:320px;overflow-y:auto">
+              <div class="loading"><span class="spinner"></span>Đang tải...</div>
+            </div>
+          </div>
+
+          <!-- Set Drive link -->
+          <div>
+            <div style="font-size:13px;font-weight:700;color:#374151;margin-bottom:10px">🔗 Cung cấp file Excel cho users</div>
+            <div style="background:#F0FDF4;border:1px solid #A7F3D0;border-radius:10px;padding:16px">
+              <div style="margin-bottom:10px">
+                <div style="font-size:11px;font-weight:600;color:#374151;margin-bottom:4px">Google Drive link *</div>
+                <input id="adminCalcLink" placeholder="https://drive.google.com/..."
+                  style="width:100%;height:34px;border:1.5px solid #D1D5DB;border-radius:6px;padding:0 10px;font-size:12px"/>
+              </div>
+              <div style="margin-bottom:12px">
+                <div style="font-size:11px;font-weight:600;color:#374151;margin-bottom:4px">Mô tả file</div>
+                <input id="adminCalcNote" placeholder="VD: Bảng tính thủy lực Manning v1.2"
+                  style="width:100%;height:34px;border:1.5px solid #D1D5DB;border-radius:6px;padding:0 10px;font-size:12px"/>
+              </div>
+              <button onclick="adminSaveCalcDriveLink()"
+                style="width:100%;height:36px;background:#059669;color:#fff;border:none;border-radius:8px;font-weight:700;font-size:13px;cursor:pointer">
+                💾 Lưu link Drive
+              </button>
+
+              <!-- Current link display -->
+              <div id="calcCurrentLink" style="display:none;margin-top:12px;padding:10px;background:#ECFDF5;border-radius:8px">
+                <div style="font-size:11px;font-weight:600;color:#065F46;margin-bottom:4px">Link hiện tại:</div>
+                <div id="calcCurrentLinkText" style="font-size:11px;color:#374151;word-break:break-all"></div>
+                <div id="calcCurrentLinkNote" style="font-size:11px;color:#6B7280;margin-top:2px"></div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- BÁO CÁO TỔNG HỢP -->
+    <div id="pageReport" class="page">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px">
+        <div class="page-title" style="margin-bottom:0">📋 Báo cáo Tổng hợp Dự án</div>
+        <div style="display:flex;gap:8px">
+          <button onclick="loadReport()" style="height:32px;padding:0 12px;background:#EFF6FF;color:#1E40AF;border:1.5px solid #BFDBFE;border-radius:8px;font-size:12px;font-weight:600;cursor:pointer">🔄 Làm mới</button>
+          <button onclick="exportReportCSV()" style="height:32px;padding:0 12px;background:#F0FDF4;color:#065F46;border:1.5px solid #A7F3D0;border-radius:8px;font-size:12px;font-weight:600;cursor:pointer" title="Xuất danh sách dự án ra file CSV">📊 Xuất CSV</button>
+          <button onclick="printReport()" style="height:32px;padding:0 14px;background:#1E3A8A;color:#fff;border:none;border-radius:8px;font-size:12px;font-weight:700;cursor:pointer">🖨️ In / Xuất PDF</button>
+        </div>
+      </div>
+
+      <div id="reportContent">
+        <!-- Report stats header -->
+        <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:12px;margin-bottom:20px" id="reportStats">
+          <div class="loading"><span class="spinner"></span>Đang tải...</div>
+        </div>
+
+        <!-- Projects table -->
+        <div style="background:var(--card);border:1px solid var(--border);border-radius:var(--radius);overflow:hidden;margin-bottom:16px;box-shadow:var(--shadow)">
+          <div style="padding:14px 16px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between">
+            <div style="font-size:13px;font-weight:700;color:var(--blue)">📁 Danh sách dự án</div>
+            <div style="font-size:11px;color:var(--muted)" id="reportProjCount">--</div>
+          </div>
+          <div style="overflow-x:auto">
+            <table id="reportTable" style="width:100%;border-collapse:collapse;font-size:12px">
+              <thead>
+                <tr style="background:#F8FAFC">
+                  <th style="padding:10px 12px;text-align:left;font-weight:700;color:#374151;border-bottom:1px solid var(--border);white-space:nowrap">STT</th>
+                  <th style="padding:10px 12px;text-align:left;font-weight:700;color:#374151;border-bottom:1px solid var(--border)">Tên dự án</th>
+                  <th style="padding:10px 12px;text-align:left;font-weight:700;color:#374151;border-bottom:1px solid var(--border)">Nhóm trưởng</th>
+                  <th style="padding:10px 12px;text-align:left;font-weight:700;color:#374151;border-bottom:1px solid var(--border)">Deadline</th>
+                  <th style="padding:10px 12px;text-align:center;font-weight:700;color:#374151;border-bottom:1px solid var(--border)">Tiến độ</th>
+                  <th style="padding:10px 12px;text-align:center;font-weight:700;color:#374151;border-bottom:1px solid var(--border)">Trạng thái</th>
+                </tr>
+              </thead>
+              <tbody id="reportTableBody">
+                <tr><td colspan="6" style="padding:20px;text-align:center;color:var(--muted)">Đang tải...</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        <!-- Report footer info -->
+        <div style="background:var(--card);border:1px solid var(--border);border-radius:var(--radius);padding:14px 16px;font-size:11px;color:var(--muted);box-shadow:var(--shadow)">
+          <span id="reportFooter">Báo cáo được tạo lúc --:--  |  S-RETC Web Companion v2.1</span>
+        </div>
+      </div>
+    </div>
+
+  </div><!-- /main-content -->
+</div><!-- /app -->
+
+<script>
+// ── Config (thay bằng giá trị thật) ───────────────────────────────
+const FB_URL       = 'https://roadauto-sretc-default-rtdb.asia-southeast1.firebasedatabase.app';
+const TG_TOKEN     = '8633197721:AAEKIwnnlUT28jGDOOVsgiko3y8WWhRwHeM';
+const TG_ADMIN_ID  = ''; // Điền Chat ID của Admin Telegram vào đây
+const FB_SECRET= '';  // để trống nếu dùng rules .read=true cho public data
+
+// ── Firebase helper ────────────────────────────────────────────────
+async function fbGet(path) {
+  const url = `${FB_URL}/${path}.json${FB_SECRET ? '?auth='+FB_SECRET : ''}`;
+  const r = await fetch(url);
+  if (!r.ok) throw new Error('Firebase error ' + r.status);
+  return r.json();
+}
+
+// ── Auth (BCrypt check via Firebase) ──────────────────────────────
+let currentUser = null;
+
+async function doLogin() {
+  const u   = document.getElementById('inpUser').value.trim();
+  const p   = document.getElementById('inpPass').value;
+  const msg = document.getElementById('authMsg');
+  const btn = document.getElementById('btnLogin');
+  if (!u || !p) { msg.textContent='Vui lòng nhập đầy đủ!'; return; }
+  msg.textContent='⏳ Đang xác thực...'; msg.style.color='#6B7280';
+  if(btn) btn.disabled=true;
+
+  try {
+    let data;
+    try { data = await fbGet('Users/'+u); }
+    catch(fe) {
+      const s = fe.message||'';
+      msg.innerHTML = (s.includes('401')||s.includes('403'))
+        ? '<span style="color:#DC2626">❌ Firebase Rules chưa cho phép đọc Users.<br>Vào <a href="https://console.firebase.google.com" target="_blank" style="color:#1E40AF">Firebase Console</a> → Rules → set <code>.read:true</code> cho Users.</span>'
+        : '<span style="color:#DC2626">❌ Lỗi kết nối Firebase: '+s+'</span>';
+      if(btn) btn.disabled=false; return;
+    }
+
+    if (!data) { msg.textContent='❌ Tài khoản không tồn tại!'; msg.style.color='#DC2626'; if(btn)btn.disabled=false; return; }
+    if (data.IsApproved===false) { msg.textContent='❌ Chưa được Admin phê duyệt!'; msg.style.color='#DC2626'; if(btn)btn.disabled=false; return; }
+
+    const storedWeb = data.PasswordWeb||'';
+    const hash256   = await sha256(p);
+
+    if (storedWeb) {
+      if (storedWeb !== hash256) { msg.textContent='❌ Sai mật khẩu web!'; msg.style.color='#DC2626'; if(btn)btn.disabled=false; return; }
+    } else {
+      // Chưa có PasswordWeb — thử tự kích hoạt
+      msg.textContent='⏳ Lần đầu — đang kích hoạt...';
+      const wr = await fetch(`${FB_URL}/Users/${u}/PasswordWeb.json`,{
+        method:'PUT', headers:{'Content-Type':'application/json'}, body:JSON.stringify(hash256)
+      });
+      if (!wr.ok) {
+        msg.innerHTML=`<div style="background:#FEF3C7;border:1px solid #FDE68A;border-radius:8px;padding:12px;margin-top:6px;font-size:12px;text-align:left">
+          <strong style="color:#92400E">⚠️ Tài khoản chưa kích hoạt web</strong><br><br>
+          <strong>Cách 1 (Desktop):</strong> Admin vào <strong>AdminPage → Bảng Users → 🔑 Reset</strong> cho tài khoản này<br><br>
+          <strong>Cách 2 (Web):</strong> Admin đăng nhập web → <strong>Admin → Users → 🌐 Kích hoạt</strong><br><br>
+          <strong>Cách 3 (Firebase Console):</strong> Thêm field <code>PasswordWeb</code> = SHA256 của mật khẩu cho user ${u}
+        </div>`;
+        if(btn)btn.disabled=false; return;
+      }
+    }
+
+    currentUser = { username:u, fullName:data.FullName||u, role:data.Role||'User' };
+    sessionStorage.setItem('sretc_user', JSON.stringify(currentUser));
+    msg.textContent='✅ Đăng nhập thành công!'; msg.style.color='#059669';
+    showApp(); updateAdminNav();
+    setTimeout(()=>showToast('👋 Chào mừng, '+(data.FullName||u)+'!','#059669'),300);
+  } catch(e) {
+    msg.innerHTML='<span style="color:#DC2626">❌ '+e.message+'</span>';
+    console.error(e);
+  } finally { if(btn)btn.disabled=false; }
+}
+
+
+async function sha256(msg) {
+  const buf = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(msg));
+  return Array.from(new Uint8Array(buf)).map(b=>b.toString(16).padStart(2,'0')).join('');
+}
+
+function doLogout() {
+  sessionStorage.removeItem('sretc_user');
+  currentUser = null;
+  document.getElementById('app').style.display = 'none';
+  document.getElementById('authScreen').style.display = 'flex';
+}
+
+function showApp() {
+  document.getElementById('authScreen').style.display = 'none';
+  document.getElementById('app').style.display = 'flex';
+  const av = (currentUser.fullName||'?').split(' ');
+  const initials = av.length > 1 ? av[0][0]+av[av.length-1][0] : av[0][0];
+  document.getElementById('topAvatar').textContent = initials.toUpperCase();
+  document.getElementById('topName').textContent = currentUser.fullName;
+  // Show mobile admin button if admin
+  const mab = document.getElementById('mobileAdminBtn');
+  if (mab && currentUser.role === 'Admin') mab.style.display = '';
+  loadDashboard();
+  loadLib('TCVN', null);
+  loadUnreadCount();
+}
+
+// ── Offline/Online detection ──────────────────────────────────────
+window.addEventListener('online',  () => {
+  const b = document.getElementById('offlineBanner');
+  if (b) b.style.display = 'none';
+  showToast('✅ Đã kết nối lại mạng!', '#059669');
+});
+window.addEventListener('offline', () => {
+  const b = document.getElementById('offlineBanner');
+  if (b) b.style.display = 'block';
+  showToast('📶 Mất kết nối mạng!', '#EF4444');
+});
+if (!navigator.onLine) {
+  const b = document.getElementById('offlineBanner');
+  if (b) b.style.display = 'block';
+}
+
+// ── Scroll to top button ──────────────────────────────────────────
+document.querySelector('.main-content')?.addEventListener('scroll', function() {
+  const btn = document.getElementById('scrollTopBtn');
+  if (!btn) return;
+  btn.style.display = this.scrollTop > 300 ? 'flex' : 'none';
+});
+window.addEventListener('scroll', () => {
+  const btn = document.getElementById('scrollTopBtn');
+  if (!btn) return;
+  btn.style.display = window.scrollY > 300 ? 'flex' : 'none';
+});
+
+// Welcome toast
+function showToast(msg, color) {
+  const t = document.createElement('div');
+  t.style.cssText = `position:fixed;bottom:24px;right:24px;background:${color||'#1E3A8A'};color:#fff;
+    padding:12px 20px;border-radius:10px;font-size:13px;font-weight:600;z-index:9999;
+    box-shadow:0 4px 20px rgba(0,0,0,.2);animation:slideIn .3s ease`;
+  t.textContent = msg;
+  document.body.appendChild(t);
+  setTimeout(()=>t.remove(), 3500);
+}
+
+// ── Navigation ─────────────────────────────────────────────────────
+const PAGES = {dash:'pageDash',projects:'pageProjects',chat:'pageChat',library:'pageLibrary',coords:'pageCoords',estimate:'pageEstimate', profile:'pageProfile', feedback:'pageFeedback', admin:'pageAdmin', report:'pageReport'};
+const NAVS  = {dash:'navDash', projects:'navProjects',chat:'navChat', library:'navLib',   coords:'navCoords', estimate:'navEstimate', profile:'navProfile', feedback:'navFeedback', admin:'navAdmin', report:'navReport'};
+
+function showPage(name) {
+  Object.entries(PAGES).forEach(([k,id])=>{ document.getElementById(id).classList.toggle('active',k===name); });
+  Object.entries(NAVS).forEach(([k,id])=>{ const el=document.getElementById(id); if(el) el.classList.toggle('active',k===name); });
+  if (name==='projects') loadProjects();
+  if (name==='estimate') loadEstimate();
+  if (name==='profile')  loadProfile();
+  if (name==='admin')    { loadAdminFeedbacks(); }
+  if (name==='report')   loadReport();
+  if (name==='feedback') loadMyFeedbacks();
+}
+
+// ── Dashboard ──────────────────────────────────────────────────────
+async function loadDashboard() {
+  // Dynamic greeting
+  const h = new Date().getHours();
+  const greet = h < 12 ? 'Chào buổi sáng' : h < 18 ? 'Chào buổi chiều' : 'Chào buổi tối';
+  const name  = (currentUser.fullName || '').split(' ').pop();
+  const dashTitle = document.getElementById('dashGreet');
+  if (dashTitle) dashTitle.textContent = `🏠 ${greet}, ${name}!`;
+
+  try {
+    // Notice
+    const notice = await fbGet('SystemData/AdminNotice').catch(()=>null);
+    const nb = document.getElementById('noticeBar');
+    if (notice && nb) {
+      nb.style.display='flex';
+      document.getElementById('noticeText').textContent = notice;
+    }
+
+    // Projects
+    const raw = await fbGet('Projects/' + currentUser.username).catch(()=>null);
+    const projects = raw ? Object.entries(raw).map(([id,v])=>({id,...v})) : [];
+    const total  = projects.length;
+    const active = projects.filter(p=>p.Status==='InProgress').length;
+    const done   = projects.filter(p=>p.Status==='Completed').length;
+    const late   = projects.filter(p=>isLate(p.Deadline)).length;
+
+    document.getElementById('statTotal').textContent  = total;
+    document.getElementById('statActive').textContent = active;
+    document.getElementById('statDone').textContent   = done;
+    document.getElementById('statLate').textContent   = late;
+
+    // Late badge
+    const lb = document.getElementById('lateBadge');
+    if (lb) lb.style.display = late > 0 ? '' : 'none';
+
+    // Charts (show only if have data)
+    const chartRow = document.getElementById('chartRow');
+    if (total > 0 && chartRow) {
+      chartRow.style.display = 'grid';
+      renderDonutChart(active, done, late, total);
+      renderBarChart(projects);
+    }
+
+    // Recent projects (max 6)
+    renderProjects(projects.slice(0, 6), 'dashProjects');
+  } catch(e) { console.error(e); }
+}
+
+// ── Báo cáo tổng hợp ──────────────────────────────────────────────
+async function loadReport() {
+  try {
+    const raw = await fbGet('Projects/' + currentUser.username).catch(()=>null);
+    const projects = raw ? Object.entries(raw).map(([id,v])=>({id,...v})) : [];
+
+    const total    = projects.length;
+    const active   = projects.filter(p=>p.Status==='InProgress').length;
+    const done     = projects.filter(p=>p.Status==='Completed').length;
+    const late     = projects.filter(p=>isLate(p.Deadline)).length;
+    const avgPct   = total > 0 ? Math.round(projects.reduce((s,p)=>s+pct(p.WorkDone),0)/total) : 0;
+
+    // Stats cards
+    const statsEl = document.getElementById('reportStats');
+    if (statsEl) statsEl.innerHTML = [
+      ['📁','Tổng dự án', total, '#1E3A8A'],
+      ['⏳','Đang TK',    active,'#3B82F6'],
+      ['✅','Hoàn thành', done,  '#10B981'],
+      ['⚠️','Sắp hạn',   late,  '#F59E0B'],
+      ['📊','TB tiến độ', avgPct+'%','#7C3AED'],
+    ].map(([icon,lbl,val,color])=>`
+      <div class="stat-card">
+        <span class="stat-icon">${icon}</span>
+        <div>
+          <div class="stat-val" style="color:${color}">${val}</div>
+          <div class="stat-label">${lbl}</div>
+        </div>
+      </div>`).join('');
+
+    // Projects count
+    const cntEl = document.getElementById('reportProjCount');
+    if (cntEl) cntEl.textContent = total + ' dự án';
+
+    // Table body
+    const tbody = document.getElementById('reportTableBody');
+    if (tbody) {
+      if (!projects.length) {
+        tbody.innerHTML = '<tr><td colspan="6" style="padding:20px;text-align:center;color:var(--muted)">Chưa có dự án nào</td></tr>';
+      } else {
+        tbody.innerHTML = projects.map((p,i) => {
+          const p2      = pct(p.WorkDone);
+          const isLateP = isLate(p.Deadline);
+          const statusText = p.Status==='Completed' ? '✅ Hoàn thành'
+            : isLateP ? '⚠️ Sắp hạn' : '⏳ Đang TK';
+          const statusColor = p.Status==='Completed' ? '#065F46'
+            : isLateP ? '#92400E' : '#1E40AF';
+          const statusBg    = p.Status==='Completed' ? '#D1FAE5'
+            : isLateP ? '#FEF3C7' : '#DBEAFE';
+          const barColor = p2<40?'#EF4444':p2<80?'#F59E0B':'#10B981';
+          const dl = p.Deadline ? new Date(p.Deadline).toLocaleDateString('vi-VN') : '—';
+          return `<tr style="border-bottom:1px solid var(--border);${i%2===1?'background:#F9FAFB':''}">
+            <td style="padding:10px 12px;color:var(--muted);font-weight:600">${i+1}</td>
+            <td style="padding:10px 12px;font-weight:600;color:var(--text)">${escHtml(p.Name||'—')}</td>
+            <td style="padding:10px 12px;color:var(--muted)">${escHtml(p.Leader||'—')}</td>
+            <td style="padding:10px 12px;color:var(--muted)">${dl}</td>
+            <td style="padding:10px 12px;text-align:center">
+              <div style="display:flex;align-items:center;gap:6px;justify-content:center">
+                <div style="width:60px;height:8px;background:#F1F5F9;border-radius:4px;overflow:hidden">
+                  <div style="width:${p2}%;height:100%;background:${barColor};border-radius:4px"></div>
+                </div>
+                <span style="font-weight:700;color:${barColor};font-size:11px">${p2}%</span>
+              </div>
+            </td>
+            <td style="padding:10px 12px;text-align:center">
+              <span style="background:${statusBg};color:${statusColor};padding:2px 8px;
+                border-radius:12px;font-size:11px;font-weight:700">${statusText}</span>
+            </td>
+          </tr>`;
+        }).join('');
+      }
+    }
+
+    // Footer
+    const foot = document.getElementById('reportFooter');
+    if (foot) foot.textContent =
+      `Báo cáo của ${currentUser.fullName || currentUser.username}  |  ` +
+      `${new Date().toLocaleString('vi-VN')}  |  S-RETC Web Companion v2.1`;
+
+  } catch(e) { console.error('loadReport:', e); }
+}
+
+function printReport() {
+  // Print style for clean PDF output
+  const style = document.createElement('style');
+  style.id = 'printStyle';
+  style.textContent = `
+    @media print {
+      body * { visibility: hidden !important; }
+      #pageReport, #pageReport * { visibility: visible !important; }
+      #pageReport { position: fixed; top:0; left:0; width:100%; padding:20px; }
+      .topbar, nav, .sidebar { display: none !important; }
+      button { display: none !important; }
+      @page { margin: 15mm; }
+    }`;
+  document.head.appendChild(style);
+  window.print();
+  setTimeout(()=>{ const s=document.getElementById('printStyle'); if(s) s.remove(); }, 1000);
+}
+
+function exportReportCSV() {
+  if (!_allProjects.length) { showToast('Chưa có dự án để xuất!','#F59E0B'); return; }
+  const headers = ['STT','Tên dự án','Nhóm trưởng','Deadline','Tiến độ (%)','Trạng thái'];
+  const rows = _allProjects.map((p, i) => {
+    const p2 = pct(p.WorkDone);
+    const status = p.Status==='Completed' ? 'Hoàn thành' : isLate(p.Deadline) ? 'Sắp hạn' : 'Đang TK';
+    const dl = p.Deadline ? new Date(p.Deadline).toLocaleDateString('vi-VN') : '';
+    return [i+1, p.Name||'', p.Leader||'', dl, p2, status]
+      .map(v => '"' + String(v).replace(/"/g,'""') + '"').join(',');
+  });
+  const csv = '\uFEFF' + headers.map(h=>`"${h}"`).join(',') + '\n' + rows.join('\n');
+  const blob = new Blob([csv], {type:'text/csv;charset=utf-8'});
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = `BaoCao_DuAn_${new Date().toLocaleDateString('vi-VN').replace(/\//g,'-')}.csv`;
+  a.click();
+  URL.revokeObjectURL(a.href);
+  showToast('✅ Đã xuất báo cáo CSV!','#059669');
+}
+
+// ── Global keyboard shortcuts ──────────────────────────────────────
+document.addEventListener('keydown', e => {
+  // Only when not typing in an input
+  if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA' || e.target.tagName === 'SELECT') return;
+  if (!e.ctrlKey && !e.altKey) return;
+
+  const shortcuts = {
+    '1': 'dash', '2': 'projects', '3': 'chat', '4': 'library',
+    '5': 'coords', '6': 'estimate', '7': 'report', '8': 'feedback', '9': 'profile'
+  };
+  if (e.ctrlKey && shortcuts[e.key]) {
+    e.preventDefault();
+    showPage(shortcuts[e.key]);
+  }
+  // Ctrl+Shift+A = Admin (nếu có quyền)
+  if (e.ctrlKey && e.shiftKey && e.key === 'A') {
+    e.preventDefault();
+    if (currentUser?.role === 'Admin') showPage('admin');
+  }
+  // Escape = close modals
+  if (e.key === 'Escape') {
+    closeEditModal();
+    const ragPanel = document.getElementById('ragPanel');
+    if (ragPanel && ragPanel.style.display !== 'none') ragPanel.style.display = 'none';
+  }
+});
+
+function renderDonutChart(active, done, late, total) {
+  const circ = 2 * Math.PI * 36; // 226.2
+  let offset = 0;
+
+  function setArc(id, count, color) {
+    const el = document.getElementById(id);
+    if (!el) return;
+    const len = total > 0 ? (count / total) * circ : 0;
+    el.setAttribute('stroke-dasharray', `${len.toFixed(1)} ${(circ - len).toFixed(1)}`);
+    el.setAttribute('stroke-dashoffset', (-offset).toFixed(1));
+    offset += len;
+  }
+
+  // Reset
+  ['donutActive','donutDone','donutLate'].forEach(id => {
+    const el = document.getElementById(id);
+    if (el) { el.setAttribute('stroke-dasharray','0 226'); el.setAttribute('stroke-dashoffset','0'); }
+  });
+
+  setTimeout(() => {
+    offset = 0;
+    setArc('donutActive', active, '#3B82F6');
+    setArc('donutDone', done, '#10B981');
+    setArc('donutLate', late, '#F59E0B');
+  }, 50);
+
+  const dc = document.getElementById('donutCenter');
+  if (dc) dc.textContent = total;
+  const lgA = document.getElementById('lgActive'); if (lgA) lgA.textContent = active;
+  const lgD = document.getElementById('lgDone');   if (lgD) lgD.textContent = done;
+  const lgL = document.getElementById('lgLate');   if (lgL) lgL.textContent = late;
+}
+
+function renderBarChart(projects) {
+  const el = document.getElementById('barChart');
+  if (!el) return;
+  // Top 5 projects by progress
+  const top = [...projects]
+    .filter(p => p.Status !== 'Completed')
+    .sort((a,b) => pct(b.WorkDone) - pct(a.WorkDone))
+    .slice(0, 5);
+  if (!top.length) {
+    el.innerHTML = '<div style="font-size:12px;color:var(--muted);text-align:center;padding:16px">Không có dự án đang thực hiện</div>';
+    return;
+  }
+  el.innerHTML = top.map(p => {
+    const p2 = pct(p.WorkDone);
+    const color = p2 < 40 ? '#EF4444' : p2 < 70 ? '#F59E0B' : '#10B981';
+    const name = (p.Name||'Dự án').substring(0, 14);
+    const isWarning = isLate(p.Deadline);
+    return `<div class="bar-row">
+      <div class="bar-label" title="${p.Name||''}">${name}${isWarning?'⚠️':''}</div>
+      <div class="bar-track">
+        <div class="bar-fill" style="width:${p2}%;background:${color}"></div>
+      </div>
+      <div class="bar-val" style="color:${color}">${p2}%</div>
+    </div>`;
+  }).join('');
+}
+
+function isLate(deadline) {
+  if (!deadline) return false;
+  const d = new Date(deadline);
+  const diff = (d - new Date()) / 86400000;
+  return diff > 0 && diff < 14;
+}
+
+function pct(workDone) {
+  const m = (workDone||'').match(/(\d+)/);
+  return m ? Math.min(100, parseInt(m[1])) : 0;
+}
+
+function renderProjects(projects, containerId) {
+  const el = document.getElementById(containerId);
+  if (!el) return;
+  if (!projects.length) {
+    el.innerHTML='<div class="loading" style="grid-column:1/-1">Chưa có dự án nào. Thêm dự án mới bên trên!</div>';
+    return;
+  }
+  el.innerHTML = projects.map(p=>{
+    const p2 = pct(p.WorkDone);
+    const statusClass = p.Status==='Completed' ? 'status-done' : isLate(p.Deadline) ? 'status-late' : 'status-active';
+    const statusText  = p.Status==='Completed' ? '✅ Hoàn thành' : isLate(p.Deadline) ? '⚠️ Sắp hạn' : '⏳ Đang TK';
+    const color = p2<40 ? '#EF4444' : p2<80 ? '#F97316' : '#10B981';
+    const deadline = p.Deadline ? new Date(p.Deadline).toLocaleDateString('vi-VN') : '—';
+    return `<div class="proj-card">
+      <div style="display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:6px">
+        <div class="proj-name" style="flex:1;margin-right:8px">${escHtml(p.Name||'Dự án')}</div>
+        <span class="proj-status ${statusClass}">${statusText}</span>
+      </div>
+      <div class="proj-meta">
+        👤 ${escHtml(p.Leader||'—')} &nbsp;·&nbsp; 📅 ${deadline}
+      </div>
+      <div style="display:flex;align-items:center;justify-content:space-between;margin:8px 0 4px;font-size:11px;color:#6B7280">
+        <span>Tiến độ</span>
+        <div style="display:flex;align-items:center;gap:6px">
+          <input type="range" min="0" max="100" value="${p2}"
+            style="width:60px;height:4px;cursor:pointer;accent-color:${color}"
+            oninput="this.nextElementSibling.textContent=this.value+'%'"
+            onchange="updateProgress('${p.id}',this.value)"/>
+          <strong style="color:${color};min-width:32px">${p2}%</strong>
+        </div>
+      </div>
+      <div class="prog-bar"><div class="prog-fill" style="width:${p2}%;background:${color}"></div></div>
+      ${p.WorkDone ? `<div style="font-size:11px;color:#059669;margin-top:6px;font-style:italic">📝 ${escHtml(p.WorkDone.substring(0,60))}</div>` : ''}
+      <div style="display:flex;gap:6px;margin-top:10px">
+        ${p.Status!=='Completed' ? `<button onclick="markDone('${p.id}')"
+          style="flex:1;height:26px;background:#10B981;color:#fff;border:none;border-radius:6px;font-size:11px;font-weight:700;cursor:pointer">✔ Hoàn thành</button>` : ''}
+        <button onclick="openEditProject('${p.id}','${escHtml(p.Name||'')}','${escHtml(p.Leader||'')}','${p.Deadline||''}','${p2}','${escHtml(p.WorkDone||'')}')"
+          style="height:26px;padding:0 10px;background:#EFF6FF;color:#1E40AF;border:1px solid #BFDBFE;border-radius:6px;font-size:11px;font-weight:700;cursor:pointer"
+          title="Chỉnh sửa">✏️</button>
+        <button onclick="deleteProject('${p.id}')"
+          style="height:26px;padding:0 10px;background:#FEE2E2;color:#DC2626;border:none;border-radius:6px;font-size:11px;font-weight:700;cursor:pointer"
+          title="Xóa dự án">🗑</button>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+async function loadProjects() {
+  const el = document.getElementById('projList');
+  if (el) el.innerHTML = '<div class="loading"><span class="spinner"></span>Đang tải...</div>';
+  try {
+    const raw = await fbGet('Projects/' + currentUser.username).catch(()=>null);
+    _allProjects = raw ? Object.entries(raw).map(([id,v])=>({id,...v})) : [];
+    const lbl = document.getElementById('projCountLabel');
+    if (lbl) lbl.textContent = `${_allProjects.length} DỰ ÁN`;
+    // Apply current filter
+    filterProjects();
+  } catch(e) { if(el) el.innerHTML='<div class="loading">Lỗi tải dữ liệu</div>'; }
+}
+
+// ── Chatbot ────────────────────────────────────────────────────────
+let chatHistory = [];
+let ragDocs = []; // [{name, url}]
+
+function toggleRagPanel() {
+  const p = document.getElementById('ragPanel');
+  if (p) p.style.display = p.style.display === 'none' ? '' : 'none';
+}
+
+function addRagDoc() {
+  const url  = document.getElementById('ragUrlInput')?.value.trim() || '';
+  const name = document.getElementById('ragNameInput')?.value.trim() || 'TL ' + (ragDocs.length+1);
+  if (!url) { showToast('❌ Nhập URL tài liệu!', '#EF4444'); return; }
+  if (ragDocs.find(d => d.url === url)) { showToast('⚠️ URL này đã thêm rồi', '#F59E0B'); return; }
+  ragDocs.push({ name, url });
+  renderRagList();
+  if(document.getElementById('ragUrlInput')) document.getElementById('ragUrlInput').value = '';
+  if(document.getElementById('ragNameInput')) document.getElementById('ragNameInput').value = '';
+  showToast('✅ Đã thêm: ' + name, '#059669');
+}
+
+function removeRagDoc(idx) { ragDocs.splice(idx, 1); renderRagList(); }
+
+function clearRag() { ragDocs = []; renderRagList(); showToast('🗑 Đã xóa RAG', '#64748B'); }
+
+function renderRagList() {
+  const el = document.getElementById('ragFileList');
+  const cnt = document.getElementById('ragCount');
+  if (cnt) cnt.textContent = ragDocs.length;
+  if (!el) return;
+  if (!ragDocs.length) { el.innerHTML = '<span style="font-size:11px;color:#9CA3AF;font-style:italic">Chưa có tài liệu.</span>'; return; }
+  el.innerHTML = ragDocs.map((d,i) =>
+    `<span style="display:inline-flex;align-items:center;gap:4px;background:#EDE9FE;color:#5B21B6;padding:3px 8px;border-radius:20px;font-size:11px;font-weight:600">
+      📄 ${escHtml(d.name)}
+      <button onclick="removeRagDoc(${i})" style="background:none;border:none;cursor:pointer;color:#7C3AED;font-size:13px;line-height:1;padding:0 2px">×</button>
+    </span>`).join('');
+}
+
+function quickSend(btn) {
+  const inp = document.getElementById('chatInput');
+  if (inp) { inp.value = btn.textContent.trim(); sendChat(); }
+}
+
+async function sendChat() {
+  const inp = document.getElementById('chatInput');
+  const msg = inp?.value.trim();
+  if (!msg) return;
+  inp.value = '';
+  addMsg(msg, 'user');
+  const typingId = addMsg('⏳ Đang suy nghĩ...', 'bot', true);
+  try {
+    const apiKey = await fbGet('SystemData/GroqApiKey').catch(()=>null);
+    if (!apiKey) {
+      updateMsg(typingId, '❌ Chưa có Groq API Key. Admin cần cấu hình tại Firebase → SystemData/GroqApiKey');
+      const cg = document.getElementById('chatGroqKey'); if(cg) cg.style.display='';
+      return;
+    }
+    const model = document.getElementById('chatModel')?.value || 'llama-3.3-70b-versatile';
+
+    // Build rich system prompt with user context
+    const userName = currentUser?.fullName || currentUser?.username || 'Kỹ sư';
+    let sysPrompt = `Bạn là trợ lý AI chuyên ngành kỹ thuật xây dựng cầu đường Việt Nam — S-RETC Toolkit.
+
+Thông tin người dùng: ${userName} (vai trò: ${currentUser?.role || 'Kỹ sư'})
+
+CHUYÊN MÔN:
+- Thiết kế cầu, cống, đường bộ theo TCVN, QCVN 41, 22TCN
+- Dự toán xây dựng theo Thông tư 12/2021/TT-BXD
+- Khảo sát địa chất, thủy văn, địa hình
+- Vật liệu: bê tông, thép, đất đắp, cấp phối đá dăm
+- AutoCAD, phần mềm thiết kế cầu đường
+
+QUY TẮC TRẢ LỜI:
+- Trả lời bằng tiếng Việt, ngắn gọn, chính xác
+- Khi tính toán: ghi rõ công thức → thay số → kết quả + đơn vị
+- Khi trích dẫn: ghi số điều/khoản của tiêu chuẩn
+- Nếu không chắc: nói rõ "cần kiểm tra thêm" không đoán mò
+- Ưu tiên an toàn kỹ thuật trong mọi tư vấn`;
+
+    if (ragDocs.length > 0) {
+      sysPrompt += '\n\nTÀI LIỆU THAM KHẢO (user đính kèm):\n' +
+        ragDocs.map(d => '- ' + d.name + ': ' + d.url).join('\n') +
+        '\nƯu tiên dùng tài liệu trên để trả lời chính xác hơn.';
+    }
+    chatHistory.push({ role:'user', content: msg });
+    const resp = await fetch('https://api.groq.com/openai/v1/chat/completions', {
+      method:'POST',
+      headers:{'Content-Type':'application/json','Authorization':'Bearer '+apiKey},
+      body: JSON.stringify({
+        model, max_tokens: 1200, temperature: 0.4,
+        messages: [{ role:'system', content: sysPrompt }, ...chatHistory.slice(-12)]
+      })
+    });
+    const data = await resp.json();
+    if (!resp.ok) throw new Error(data.error?.message || resp.status);
+    const reply = data.choices?.[0]?.message?.content || 'Co loi xay ra.';
+    chatHistory.push({ role:'assistant', content: reply });
+    updateMsgMarkdown(typingId, reply);
+  } catch(e) { updateMsg(typingId, '❌ Lỗi: ' + e.message); }
+}
+
+function addMsg(text, who, isTyping=false) {
+  const div = document.getElementById('chatMessages');
+  const id = 'msg_' + Date.now() + Math.random().toString(36).slice(2,5);
+  const t = new Date().toLocaleTimeString('vi-VN',{hour:'2-digit',minute:'2-digit'});
+  const copyBtn = who==='bot' && !isTyping
+    ? `<button onclick="copyMsgText(this)" title="Copy tin nhắn"
+        style="position:absolute;top:6px;right:6px;background:rgba(0,0,0,.06);border:none;
+          border-radius:4px;padding:2px 6px;font-size:10px;cursor:pointer;opacity:0"
+        class="msg-copy-btn">📋</button>` : '';
+  div.insertAdjacentHTML('beforeend',
+    `<div id="${id}" class="msg msg-${who}${isTyping?' msg-typing':''}"
+        style="position:relative" onmouseenter="showCopyBtn(this)" onmouseleave="hideCopyBtn(this)">
+      ${copyBtn}
+      ${isTyping ? escHtml(text) : escHtml(text) + \`<div style="font-size:9px;opacity:.5;margin-top:4px;text-align:\${who==='user'?'right':'left'}">\${t}</div>\`}
+    </div>`);
+  div.scrollTop = div.scrollHeight;
+  return id;
+}
+
+function showCopyBtn(el) { const b = el.querySelector('.msg-copy-btn'); if(b) b.style.opacity='1'; }
+function hideCopyBtn(el) { const b = el.querySelector('.msg-copy-btn'); if(b) b.style.opacity='0'; }
+function copyMsgText(btn) {
+  const msg = btn.closest('.msg');
+  const text = msg ? (msg.innerText || msg.textContent).replace(/^📋.*$/m,'').trim() : '';
+  navigator.clipboard.writeText(text).then(()=>showToast('✅ Đã copy!','#059669'));
+}
+
+function updateMsg(id, text) {
+  const el = document.getElementById(id);
+  if (el) { el.textContent = text; el.classList.remove('msg-typing'); }
+  document.getElementById('chatMessages').scrollTop = 999999;
+}
+
+function updateMsgMarkdown(id, md) {
+  const el = document.getElementById(id);
+  if (!el) return;
+  el.classList.remove('msg-typing');
+  const t = new Date().toLocaleTimeString('vi-VN',{hour:'2-digit',minute:'2-digit'});
+  const copyBtn = `<button onclick="copyMsgText(this)" title="Copy"
+    style="position:absolute;top:6px;right:6px;background:rgba(0,0,0,.06);border:none;
+      border-radius:4px;padding:2px 6px;font-size:10px;cursor:pointer;opacity:0"
+    class="msg-copy-btn">📋</button>`;
+  let html = escHtml(md)
+    .replace(/\*\*(.+?)\*\*/g,'<strong>$1</strong>')
+    .replace(/`([^`]+)`/g,'<code style="background:#F1F5F9;padding:1px 4px;border-radius:3px;font-size:12px">$1</code>')
+    .replace(/^#{1,3}\s(.+)$/gm,'<div style="font-weight:700;color:#1E3A8A;margin:6px 0 2px">$1</div>')
+    .replace(/^[-•]\s(.+)$/gm,'<div style="padding-left:10px">• $1</div>')
+    .replace(/\n/g,'<br>');
+  el.style.position = 'relative';
+  el.setAttribute('onmouseenter','showCopyBtn(this)');
+  el.setAttribute('onmouseleave','hideCopyBtn(this)');
+  el.innerHTML = copyBtn + html + `<div style="font-size:9px;opacity:.5;margin-top:6px">${t}</div>`;
+  document.getElementById('chatMessages').scrollTop = 999999;
+}
+
+function clearChat() {
+  chatHistory = [];
+  const el = document.getElementById('chatMessages');
+  const t = new Date().toLocaleTimeString('vi-VN',{hour:'2-digit',minute:'2-digit'});
+  el.innerHTML = `<div class="msg msg-bot">Chat đã xóa. Sẵn sàng hỗ trợ bạn!<div style="font-size:9px;opacity:.5;margin-top:4px">${t}</div></div>`;
+  showToast('🗑 Đã xoá chat', '#64748B');
+}
+
+function exportChat() {
+  if (!chatHistory.length) { showToast('Chưa có tin nhắn để xuất!','#F59E0B'); return; }
+  const lines = chatHistory.map(m =>
+    `[${m.role==='user'?'Bạn':'S-RETC AI'}]
+${m.content}
+`).join('
+---
+
+');
+  const blob = new Blob([
+    `S-RETC Chatbot Export
+Ngày: ${new Date().toLocaleString('vi-VN')}
+
+${'='.repeat(50)}
+
+` + lines
+  ], {type:'text/plain;charset=utf-8'});
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = 'chat_sretc_' + Date.now() + '.txt';
+  a.click();
+  URL.revokeObjectURL(a.href);
+  showToast('✅ Đã xuất cuộc trò chuyện!','#059669');
+}
+
+// escHtml — single definition, no <br> by default (markdown handles newlines)
+function escHtml(s) { return (s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
+
+
+// ── Library ────────────────────────────────────────────────────────
+async function loadLib(cat, btn) {
+  if (btn) {
+    document.querySelectorAll('.lib-tab').forEach(t=>t.classList.remove('active'));
+    btn.classList.add('active');
+  }
+  const el = document.getElementById('libItems');
+  el.innerHTML = '<div class="loading"><span class="spinner"></span>Đang tải...</div>';
+  try {
+    const data = await fbGet('Library/' + cat).catch(()=>null);
+    if (!data) { el.innerHTML='<div class="loading">Chưa có tài liệu nào. Admin thêm qua Firebase Console.</div>'; return; }
+    const items = Object.entries(data).map(([id,v])=>({id,...v}));
+
+    el.innerHTML = items.map(item => {
+      const icon   = catIcon(cat);
+      const link   = item.DriveLink || item.Link || '#';
+      const desc   = item.Description || item.MoTa || '';
+      const date   = item.UpdateDate || item.NgayCapNhat || '';
+      const size   = item.Size || item.KichThuoc || '';
+      const author = item.Author || item.TacGia || '';
+      const hasLink = link && link !== '#';
+      return `<div class="lib-item" style="flex-direction:column;align-items:flex-start;gap:0;padding:14px 16px;cursor:${hasLink?'pointer':'default'}" 
+        ${hasLink ? `onclick="openLink('${link.replace(/'/g,'%27')}')"` : ''}>
+        <div style="display:flex;align-items:flex-start;gap:10px;width:100%">
+          <span class="icon" style="margin-top:2px">${icon}</span>
+          <div class="info" style="flex:1;min-width:0">
+            <div class="name" style="word-break:break-word">${escHtml(item.Name||'—')}</div>
+            ${desc ? `<div style="font-size:11px;color:var(--muted);margin-top:3px;line-height:1.4">${escHtml(desc.substring(0,100))}${desc.length>100?'...':''}</div>` : ''}
+            <div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:5px">
+              ${date   ? `<span style="font-size:10px;color:var(--muted)">📅 ${escHtml(date)}</span>` : ''}
+              ${size   ? `<span style="font-size:10px;color:var(--muted)">📦 ${escHtml(size)}</span>` : ''}
+              ${author ? `<span style="font-size:10px;color:var(--muted)">👤 ${escHtml(author)}</span>` : ''}
+            </div>
+          </div>
+          <div style="display:flex;flex-direction:column;gap:4px;flex-shrink:0" onclick="event.stopPropagation()">
+            ${hasLink ? `
+              <button onclick="openLink('${link.replace(/'/g,'%27')}')" title="Mở tài liệu"
+                style="height:26px;padding:0 8px;background:#EFF6FF;color:#1E40AF;border:1px solid #BFDBFE;border-radius:5px;font-size:11px;font-weight:600;cursor:pointer">
+                🔗 Mở
+              </button>
+              <button onclick="copyToClipboard('${link.replace(/'/g,'%27')}')" title="Copy link"
+                style="height:26px;padding:0 8px;background:#F3F4F6;color:#374151;border:1px solid #D1D5DB;border-radius:5px;font-size:11px;cursor:pointer">
+                📋
+              </button>` : '<span style="font-size:11px;color:#9CA3AF">Chưa có link</span>'}
+          </div>
+        </div>
+      </div>`;
+    }).join('');
+  } catch(e) { el.innerHTML=`<div class="loading">Lỗi tải thư viện: ${e.message}</div>`; }
+}
+
+function openGoogleMaps() {
+  const result = document.getElementById('coordResult')?.textContent || '';
+  const latMatch = result.match(/Latitude[^:]*:\s*([\d.]+)/);
+  const lngMatch = result.match(/Longitude[^:]*:\s*([\d.]+)/);
+  if (latMatch && lngMatch) {
+    window.open(`https://www.google.com/maps?q=${latMatch[1]},${lngMatch[1]}&z=15`, '_blank');
+  } else {
+    showToast('❌ Chưa có kết quả toạ độ. Bấm Chuyển trước!', '#EF4444');
+  }
+}
+
+function copyCoord(elId) {
+  const text = document.getElementById(elId)?.textContent || '';
+  navigator.clipboard.writeText(text).then(()=>showToast('✅ Đã copy!','#059669'));
+}
+
+function filterLib() {
+  const q = document.getElementById('libSearch')?.value.toLowerCase() || '';
+  document.querySelectorAll('#libItems .lib-item').forEach(el => {
+    const text = el.textContent.toLowerCase();
+    el.style.display = !q || text.includes(q) ? '' : 'none';
+  });
+}
+
+function catIcon(cat) {
+  return {TCVN:'📋',Software:'💿',Video:'🎬',LISP:'📜'}[cat]||'📄';
+}
+function openLink(url) {
+  if (url && url !== '#') window.open(decodeURIComponent(url), '_blank');
+}
+function copyToClipboard(text) {
+  navigator.clipboard.writeText(decodeURIComponent(text))
+    .then(()=>showToast('✅ Đã copy link!','#059669'))
+    .catch(()=>showToast('❌ Không copy được','#EF4444'));
+}
+
+
+// ── Estimate detail toggle ────────────────────────────────────────
+async function toggleEstDetail(detailId) {
+  const el = document.getElementById(detailId);
+  if (!el) return;
+  const isOpen = el.style.display !== 'none';
+  el.style.display = isOpen ? 'none' : 'block';
+  if (!isOpen) {
+    // Load items
+    const itemsEl = document.getElementById('est_items_' + detailId.replace('est_',''));
+    if (itemsEl && itemsEl.querySelector('.spinner')) {
+      try {
+        const estId = detailId.replace('est_','');
+        const raw = await fbGet('Estimates/' + currentUser.username + '/' + estId);
+        if (!raw || !raw.items || raw.items.length === 0) {
+          itemsEl.innerHTML = '<em style="color:#9CA3AF">Không có chi tiết</em>';
+          return;
+        }
+        itemsEl.innerHTML = `
+          <table style="width:100%;border-collapse:collapse;font-size:11px">
+            <tr style="background:#F8FAFC;font-weight:600">
+              <td style="padding:4px 6px;border:1px solid #E2E8F0">STT</td>
+              <td style="padding:4px 6px;border:1px solid #E2E8F0">Tên công tác</td>
+              <td style="padding:4px 6px;border:1px solid #E2E8F0">ĐVT</td>
+              <td style="padding:4px 6px;border:1px solid #E2E8F0;text-align:right">Khối lượng</td>
+              <td style="padding:4px 6px;border:1px solid #E2E8F0;text-align:right">Đơn giá</td>
+              <td style="padding:4px 6px;border:1px solid #E2E8F0;text-align:right">Thành tiền</td>
+            </tr>
+            ${raw.items.map((it,i)=>`
+            <tr style="border-bottom:1px solid #F1F5F9">
+              <td style="padding:4px 6px;border:1px solid #E2E8F0">${i+1}</td>
+              <td style="padding:4px 6px;border:1px solid #E2E8F0">${it.TenCongTac||it.Name||'—'}</td>
+              <td style="padding:4px 6px;border:1px solid #E2E8F0">${it.DVT||'—'}</td>
+              <td style="padding:4px 6px;border:1px solid #E2E8F0;text-align:right">${(+it.KhoiLuong||0).toLocaleString('vi')}</td>
+              <td style="padding:4px 6px;border:1px solid #E2E8F0;text-align:right">${(+it.DonGia||0).toLocaleString('vi')}</td>
+              <td style="padding:4px 6px;border:1px solid #E2E8F0;text-align:right;font-weight:600;color:#1E3A8A">
+                ${((+it.KhoiLuong||0)*(+it.DonGia||0)).toLocaleString('vi')}</td>
+            </tr>`).join('')}
+          </table>`;
+      } catch(e) { itemsEl.innerHTML = '<em style="color:#EF4444">Lỗi tải: ' + e.message + '</em>'; }
+    }
+  }
+}
+
+// ── Coordinates (Transverse Mercator + Helmert) ────────────────────
+function convertCoords() {
+  const X  = parseFloat(document.getElementById('inpX').value);
+  const Y  = parseFloat(document.getElementById('inpY').value);
+  const L0 = parseFloat(document.getElementById('selMui').value) * Math.PI/180;
+  if (isNaN(X)||isNaN(Y)) { document.getElementById('coordResult').textContent='Nhập X và Y!'; return; }
+
+  const result = vn2000_to_wgs84(X, Y, L0);
+  document.getElementById('coordResult').textContent =
+    `Latitude (Vĩ độ):  ${result.lat.toFixed(8)}°\nLongitude (Kinh độ): ${result.lng.toFixed(8)}°\n\nDecimal:  ${result.lat.toFixed(6)}, ${result.lng.toFixed(6)}\nDMS:      ${toDMS(result.lat,'N/S')}  ${toDMS(result.lng,'E/W')}`;
+}
+
+function convertCoordsRev() {
+  const lat = parseFloat(document.getElementById('inpLat').value);
+  const lng = parseFloat(document.getElementById('inpLng').value);
+  const L0  = parseFloat(document.getElementById('selMui').value) * Math.PI/180;
+  if (isNaN(lat)||isNaN(lng)) { document.getElementById('coordResult2').textContent='Nhập Lat/Lng!'; return; }
+  const result = wgs84_to_vn2000(lat, lng, L0);
+  document.getElementById('coordResult2').textContent =
+    `X (Bắc):  ${result.X.toFixed(3)} m\nY (Đông): ${result.Y.toFixed(3)} m`;
+}
+
+// ── Batch Convert ─────────────────────────────────────────────────
+function coordTab(tab, btn) {
+  document.getElementById('coordSingle').style.display = tab==='single' ? '' : 'none';
+  document.getElementById('coordBatch').style.display  = tab==='batch'  ? '' : 'none';
+  document.querySelectorAll('#pageCoords .lib-tab').forEach(b=>b.classList.remove('active'));
+  if(btn) btn.classList.add('active');
+}
+
+let _batchResults = [];
+function runBatchConvert() {
+  const raw  = document.getElementById('batchInput')?.value || '';
+  const muiDeg = parseFloat(document.getElementById('batchMui')?.value || '105');
+  const L0   = muiDeg * Math.PI / 180;
+  const out  = document.getElementById('batchOutput');
+  if (!raw.trim()) { out.textContent = '⚠️ Chưa nhập dữ liệu!'; return; }
+
+  const lines = raw.trim().split('\n').filter(l=>l.trim());
+  _batchResults = [];
+  const rows = [];
+  let ok = 0, err = 0;
+
+  for (let i = 0; i < lines.length; i++) {
+    const parts = lines[i].trim().split(',').map(p=>p.trim());
+    let name, X, Y;
+    if (parts.length >= 3) {
+      name = parts[0]; X = parseFloat(parts[1]); Y = parseFloat(parts[2]);
+    } else if (parts.length === 2) {
+      name = `P${i+1}`; X = parseFloat(parts[0]); Y = parseFloat(parts[1]);
+    } else { err++; rows.push(`❌ Dòng ${i+1}: Định dạng sai — "${lines[i]}"`); continue; }
+
+    if (isNaN(X) || isNaN(Y)) { err++; rows.push(`❌ Dòng ${i+1}: X/Y không hợp lệ`); continue; }
+
+    const r = vn2000_to_wgs84(X, Y, L0);
+    _batchResults.push({ name, X, Y, lat: r.lat, lng: r.lng });
+    rows.push(`✅ ${name.padEnd(10)} X=${X.toFixed(0).padStart(8)}  Y=${Y.toFixed(0).padStart(8)}  →  ${r.lat.toFixed(6)}, ${r.lng.toFixed(6)}`);
+    ok++;
+  }
+
+  out.textContent = `Kết quả: ${ok} điểm thành công${err>0?' | '+err+' lỗi':''}\n${'─'.repeat(70)}\n` + rows.join('\n');
+  showToast(`✅ Đã chuyển ${ok} điểm!`, '#059669');
+}
+
+function exportBatchCSV() {
+  if (!_batchResults.length) { showToast('Chưa có kết quả để xuất!','#F59E0B'); return; }
+  const header = 'STT,Tên điểm,X_VN2000,Y_VN2000,Latitude,Longitude,Google Maps';
+  const rows = _batchResults.map((r,i) =>
+    `${i+1},"${r.name}",${r.X.toFixed(3)},${r.Y.toFixed(3)},${r.lat.toFixed(8)},${r.lng.toFixed(8)},"https://maps.google.com/?q=${r.lat.toFixed(6)},${r.lng.toFixed(6)}"`
+  );
+  const csv = '\uFEFF' + header + '\n' + rows.join('\n');
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(new Blob([csv], {type:'text/csv;charset=utf-8'}));
+  a.download = 'ToaDo_VN2000_WGS84_' + Date.now() + '.csv';
+  a.click();
+  URL.revokeObjectURL(a.href);
+  showToast(`✅ Đã xuất ${_batchResults.length} điểm ra CSV!`, '#059669');
+}
+
+// Gauss-Kruger (simplified TM) for VN2000/WGS84
+function vn2000_to_wgs84(x, y, L0) {
+  const a=6378137, f=1/298.257223563, b=a*(1-f);
+  const e2=1-b*b/(a*a), ep2=e2/(1-e2);
+  const x0=0, y0=500000, k0=1, dN=0, dE=191000;
+  const N0= x-x0+dN, E0=y-y0+dE;
+  const e1=(1-Math.sqrt(1-e2))/(1+Math.sqrt(1-e2));
+  const M0=0;
+  const M=M0+N0/k0;
+  const mu=M/(a*(1-e2/4-3*e2*e2/64-5*e2*e2*e2/256));
+  const phi1=mu+(3*e1/2-27*e1*e1*e1/32)*Math.sin(2*mu)
+    +(21*e1*e1/16-55*e1*e1*e1*e1/32)*Math.sin(4*mu)
+    +(151*e1*e1*e1/96)*Math.sin(6*mu);
+  const N1=a/Math.sqrt(1-e2*Math.sin(phi1)**2);
+  const T1=Math.tan(phi1)**2, C1=ep2*Math.cos(phi1)**2;
+  const R1=a*(1-e2)/Math.pow(1-e2*Math.sin(phi1)**2,1.5);
+  const D=E0/(N1*k0);
+  const lat=phi1-(N1*Math.tan(phi1)/R1)*(D*D/2-(5+3*T1+10*C1-4*C1*C1-9*ep2)*D*D*D*D/24
+    +(61+90*T1+298*C1+45*T1*T1-252*ep2-3*C1*C1)*D*D*D*D*D*D/720);
+  const lng=L0+(D-(1+2*T1+C1)*D*D*D/6+(5-2*C1+28*T1-3*C1*C1+8*ep2+24*T1*T1)*D*D*D*D*D/120)/Math.cos(phi1);
+  return {lat:lat*180/Math.PI, lng:lng*180/Math.PI};
+}
+
+function wgs84_to_vn2000(latDeg, lngDeg, L0) {
+  const lat=latDeg*Math.PI/180, lng=lngDeg*Math.PI/180;
+  const a=6378137, f=1/298.257223563, b=a*(1-f);
+  const e2=1-b*b/(a*a), ep2=e2/(1-e2);
+  const dN=0, dE=191000, k0=1;
+  const N=a/Math.sqrt(1-e2*Math.sin(lat)**2);
+  const T=Math.tan(lat)**2, C=ep2*Math.cos(lat)**2, A2=Math.cos(lat)*(lng-L0);
+  const M=a*((1-e2/4-3*e2**2/64-5*e2**3/256)*lat
+    -(3*e2/8+3*e2**2/32+45*e2**3/1024)*Math.sin(2*lat)
+    +(15*e2**2/256+45*e2**3/1024)*Math.sin(4*lat)
+    -(35*e2**3/3072)*Math.sin(6*lat));
+  const X=k0*(M+N*Math.tan(lat)*(A2**2/2+(5-T+9*C+4*C**2)*A2**4/24+(61-58*T+T**2+600*C-330*ep2)*A2**6/720))-dN;
+  const Y=k0*N*(A2+(1-T+C)*A2**3/6+(5-18*T+T**2+72*C-58*ep2)*A2**5/120)+500000-dE;
+  return {X,Y};
+}
+
+function toDMS(dd, ns) {
+  const d=Math.floor(Math.abs(dd)), m2=Math.floor((Math.abs(dd)-d)*60);
+  const s=((Math.abs(dd)-d)*60-m2)*60;
+  const dir=dd>=0?ns.split('/')[0]:ns.split('/')[1];
+  return `${d}°${m2}'${s.toFixed(2)}"${dir}`;
+}
+
+
+// ── Project actions ────────────────────────────────────────────────
+
+async function addProject() {
+  const name     = document.getElementById('newProjName').value.trim();
+  const leader   = document.getElementById('newProjLeader').value.trim();
+  const deadline = document.getElementById('newProjDeadline').value;
+  const pctVal   = parseInt(document.getElementById('newProjPct')?.value || '0') || 0;
+  if (!name) { showToast('❌ Nhập tên dự án!', '#EF4444'); return; }
+
+  const id = 'proj_' + Date.now();
+  const data = {
+    Name: name, Leader: leader, Deadline: deadline,
+    Status: pctVal >= 100 ? 'Completed' : 'InProgress',
+    WorkDone: pctVal + '%', Description: ''
+  };
+  try {
+    const url = `${FB_URL}/Projects/${currentUser.username}/${id}.json`;
+    const r = await fetch(url, {
+      method: 'PUT', headers: {'Content-Type':'application/json'}, body: JSON.stringify(data)
+    });
+    if (!r.ok) throw new Error(r.status);
+    document.getElementById('newProjName').value = '';
+    document.getElementById('newProjLeader').value = '';
+    document.getElementById('newProjDeadline').value = '';
+    if (document.getElementById('newProjPct')) document.getElementById('newProjPct').value = '0';
+    showToast('✅ Đã thêm dự án: ' + name, '#059669');
+    loadProjects(); loadDashboard();
+  } catch(e) { showToast('❌ Lỗi: ' + e.message, '#EF4444'); }
+}
+
+async function markDone(projId) {
+  if (!confirm('Đánh dấu dự án này là Hoàn thành?')) return;
+  try {
+    const url = `${FB_URL}/Projects/${currentUser.username}/${projId}/Status.json`;
+    await fetch(url, { method:'PUT', headers:{'Content-Type':'application/json'}, body:'"Completed"' });
+    showToast('✅ Đã đánh dấu hoàn thành!', '#059669');
+    loadProjects(); loadDashboard();
+  } catch(e){ showToast('❌ Lỗi: '+e.message,'#EF4444'); }
+}
+
+async function updateProgress(projId, value) {
+  try {
+    const url = `${FB_URL}/Projects/${currentUser.username}/${projId}/WorkDone.json`;
+    await fetch(url, { method:'PUT', headers:{'Content-Type':'application/json'}, body: JSON.stringify(value + '%') });
+    // Refresh charts quietly
+    const raw = await fbGet('Projects/' + currentUser.username).catch(()=>null);
+    if (raw) {
+      const projects = Object.entries(raw).map(([id,v])=>({id,...v}));
+      renderBarChart(projects);
+    }
+  } catch(e) { console.warn('Progress update:', e.message); }
+}
+
+async function deleteProject(projId) {
+  if (!confirm('Xóa dự án này? Hành động không thể hoàn tác!')) return;
+  try {
+    await fetch(`${FB_URL}/Projects/${currentUser.username}/${projId}.json`, { method:'DELETE' });
+    showToast('🗑 Đã xóa dự án', '#64748B');
+    loadProjects(); loadDashboard();
+  } catch(e) { showToast('❌ Lỗi: '+e.message,'#EF4444'); }
+}
+
+// ── Filter & Search projects ──────────────────────────────────────
+let _allProjects = [];
+function filterProjects() {
+  const q      = (document.getElementById('projSearch')?.value||'').toLowerCase();
+  const status = document.getElementById('projFilter')?.value || 'all';
+  let filtered = _allProjects.filter(p => {
+    const matchQ = !q || (p.Name||'').toLowerCase().includes(q) ||
+                        (p.Leader||'').toLowerCase().includes(q);
+    const matchS = status==='all'   ? true
+                 : status==='late'  ? isLate(p.Deadline)
+                 : p.Status === status;
+    return matchQ && matchS;
+  });
+  const lbl = document.getElementById('projCountLabel');
+  if (lbl) lbl.textContent = `${filtered.length}/${_allProjects.length} DỰ ÁN`;
+  renderProjects(filtered, 'projList');
+}
+
+// ── Edit Project Modal ────────────────────────────────────────────
+function openEditProject(id, name, leader, deadline, pctVal, workDone) {
+  document.getElementById('editProjId').value      = id;
+  document.getElementById('editProjName').value    = name;
+  document.getElementById('editProjLeader').value  = leader;
+  document.getElementById('editProjDeadline').value= deadline;
+  document.getElementById('editProjPct').value     = pctVal;
+  // WorkDone may have % suffix — strip for note display
+  const noteClean = workDone.replace(/^\d+%\s*/, '');
+  document.getElementById('editProjNote').value    = noteClean;
+  const modal = document.getElementById('editProjModal');
+  if (modal) modal.style.display = 'flex';
+}
+
+function closeEditModal() {
+  const modal = document.getElementById('editProjModal');
+  if (modal) modal.style.display = 'none';
+}
+
+async function saveEditProject() {
+  const id       = document.getElementById('editProjId').value;
+  const name     = document.getElementById('editProjName').value.trim();
+  const leader   = document.getElementById('editProjLeader').value.trim();
+  const deadline = document.getElementById('editProjDeadline').value;
+  const pctVal   = parseInt(document.getElementById('editProjPct').value)||0;
+  const note     = document.getElementById('editProjNote').value.trim();
+  if (!name) { showToast('❌ Tên dự án không được để trống!','#EF4444'); return; }
+
+  const workDone = pctVal + (note ? '% ' + note : '%');
+  const status   = pctVal >= 100 ? 'Completed' : 'InProgress';
+
+  try {
+    const url  = `${FB_URL}/Projects/${currentUser.username}/${id}.json`;
+    const data = { Name:name, Leader:leader, Deadline:deadline, WorkDone:workDone, Status:status };
+    const r = await fetch(url, {
+      method:'PATCH', headers:{'Content-Type':'application/json'}, body:JSON.stringify(data)
+    });
+    if (!r.ok) throw new Error(r.status);
+    showToast('✅ Đã cập nhật dự án!','#059669');
+    closeEditModal();
+    loadProjects(); loadDashboard();
+  } catch(e) { showToast('❌ Lỗi: '+e.message,'#EF4444'); }
+}
+
+// ── Estimate (view only) ─────────────────────────────────────────
+let _allEstimates = [];
+async function loadEstimate() {
+  const el = document.getElementById('estimateList');
+  if (el) el.innerHTML = '<div class="loading"><span class="spinner"></span>Đang tải...</div>';
+  try {
+    const raw = await fbGet('Estimates/' + currentUser.username).catch(()=>null);
+    if (!raw) {
+      _allEstimates = [];
+      if (el) el.innerHTML='<div class="loading" style="grid-column:1/-1">Chưa có dự toán nào được lưu từ Desktop.<br><span style="font-size:12px;color:#9CA3AF">Tạo dự toán trong S-RETC Desktop → Lưu lên Cloud</span></div>';
+      const lbl = document.getElementById('estCountLabel');
+      if (lbl) lbl.textContent = '';
+      return;
+    }
+    _allEstimates = Object.entries(raw).map(([id,v])=>({id,...(v.meta||v)}));
+    const lbl = document.getElementById('estCountLabel');
+    if (lbl) lbl.textContent = `${_allEstimates.length} DỰ TOÁN`;
+    filterEstimates();
+  } catch(e) { if(el) el.innerHTML='<div class="loading">Lỗi tải dự toán: '+e.message+'</div>'; }
+}
+
+function filterEstimates() {
+  const q = (document.getElementById('estSearch')?.value || '').toLowerCase();
+  const filtered = _allEstimates.filter(p =>
+    !q ||
+    (p.TenCongTrinh||'').toLowerCase().includes(q) ||
+    (p.TenDuAn||'').toLowerCase().includes(q) ||
+    (p.Tinh||'').toLowerCase().includes(q)
+  );
+  const lbl = document.getElementById('estCountLabel');
+  if (lbl) lbl.textContent = q ? `${filtered.length}/${_allEstimates.length} DỰ TOÁN` : `${_allEstimates.length} DỰ TOÁN`;
+
+  const el = document.getElementById('estimateList');
+  if (!el) return;
+  if (!filtered.length) {
+    el.innerHTML = '<div class="loading" style="grid-column:1/-1">Không tìm thấy dự toán phù hợp</div>';
+    return;
+  }
+  el.innerHTML = filtered.map(p => {
+    const tongTien = p.TongTien ? Number(p.TongTien).toLocaleString('vi-VN') + ' đ' : '—';
+    return `<div class="proj-card" style="border-left:4px solid #1E3A8A;cursor:pointer"
+         onclick="toggleEstDetail('est_${p.id}')">
+      <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:8px">
+        <div class="proj-name" style="flex:1">💰 ${escHtml(p.TenCongTrinh||p.TenDuAn||'Dự toán')}</div>
+        <span style="font-size:12px;color:#64748B;flex-shrink:0">▾</span>
+      </div>
+      <div class="proj-meta" style="margin-top:6px">
+        📍 ${escHtml(p.Tinh||'—')} &nbsp;·&nbsp; 📅 ${escHtml(p.NgayLuu||'—')} &nbsp;·&nbsp;
+        <strong>${p.SoCongTac||0}</strong> công tác
+        ${tongTien !== '—' ? `&nbsp;·&nbsp; <span style="color:#1E3A8A;font-weight:700">${tongTien}</span>` : ''}
+      </div>
+      <div id="est_${p.id}" style="display:none;margin-top:10px;border-top:1px solid #E2E8F0;padding-top:8px">
+        <div style="font-size:11px;font-weight:600;color:#64748B;margin-bottom:6px">CHI TIẾT CÔNG TÁC:</div>
+        <div id="est_items_${p.id}" style="font-size:12px;color:#374151">
+          <div class="loading"><span class="spinner"></span>Đang tải...</div>
+        </div>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+
+// ── Profile ────────────────────────────────────────────────────────
+async function loadProfile() {
+  const u = currentUser;
+  const el = document.getElementById('profileAvatar');
+  const parts = (u.fullName||'?').split(' ');
+  const initials = parts.length > 1 ? parts[0][0]+parts[parts.length-1][0] : parts[0][0];
+  if (el) el.textContent = initials.toUpperCase();
+  const uEl = document.getElementById('profileUsername');
+  if (uEl) uEl.textContent = u.username;
+  const fEl = document.getElementById('profileFullName');
+  if (fEl) fEl.value = u.fullName || '';
+  // Load Telegram Chat ID from Firebase
+  try {
+    const tgId = await fbGet('Users/' + u.username + '/TelegramChatId').catch(()=>null);
+    const tgEl = document.getElementById('profileTgId');
+    if (tgEl && tgId) tgEl.value = tgId;
+  } catch(e) {}
+  const rEl = document.getElementById('profileRole');
+  if (rEl) rEl.textContent = u.role || 'NguoiDung';
+}
+
+async function saveProfile() {
+  const fullName = document.getElementById('profileFullName')?.value.trim() || '';
+  const newPass  = document.getElementById('profileNewPass')?.value || '';
+  const confPass = document.getElementById('profileConfPass')?.value || '';
+  const tgId     = document.getElementById('profileTgId')?.value.trim() || '';
+
+  if (!fullName) { showToast('❌ Họ tên không được để trống!', '#EF4444'); return; }
+  if (newPass && newPass !== confPass) { showToast('❌ Mật khẩu xác nhận không khớp!', '#EF4444'); return; }
+  if (newPass && newPass.length < 4) { showToast('❌ Mật khẩu tối thiểu 4 ký tự!', '#EF4444'); return; }
+
+  try {
+    // Update FullName
+    await fetch(`${FB_URL}/Users/${currentUser.username}/FullName.json`, {
+      method:'PUT', headers:{'Content-Type':'application/json'}, body: JSON.stringify(fullName)
+    });
+
+    // Update password if provided
+    if (newPass) {
+      const hash = await sha256(newPass);
+      await fetch(`${FB_URL}/Users/${currentUser.username}/PasswordWeb.json`, {
+        method:'PUT', headers:{'Content-Type':'application/json'}, body: JSON.stringify(hash)
+      });
+    }
+
+    // Save Telegram Chat ID
+    if (tgId) {
+      await fetch(`${FB_URL}/Users/${currentUser.username}/TelegramChatId.json`, {
+        method:'PUT', headers:{'Content-Type':'application/json'}, body: JSON.stringify(tgId)
+      });
+    }
+
+    // Update session
+    currentUser.fullName = fullName;
+    sessionStorage.setItem('sretc_user', JSON.stringify(currentUser));
+    document.getElementById('topName').textContent = fullName;
+    const av = fullName.split(' ');
+    const initials = av.length>1 ? av[0][0]+av[av.length-1][0] : av[0][0];
+    document.getElementById('topAvatar').textContent = initials.toUpperCase();
+    const pa = document.getElementById('profileAvatar');
+    if (pa) pa.textContent = initials.toUpperCase();
+
+    showToast('✅ Đã lưu hồ sơ thành công!', '#059669');
+    if (newPass) {
+      document.getElementById('profileNewPass').value='';
+      document.getElementById('profileConfPass').value='';
+    }
+  } catch(e) { showToast('❌ Lỗi: ' + e.message, '#EF4444'); }
+}
+
+// ── Feedback ───────────────────────────────────────────────────────
+async function sendFeedback() {
+  const type     = document.getElementById('fbType')?.value || '';
+  const content  = document.getElementById('fbContent')?.value.trim() || '';
+  const priority = document.querySelector('input[name="fbPriority"]:checked')?.value || 'Thấp';
+  if (!content) { showToast('❌ Nhập nội dung phản hồi!', '#EF4444'); return; }
+
+  const fbData = {
+    Type:      type,
+    Priority:  priority,
+    Content:   content,
+    User:      currentUser.username,
+    FullName:  currentUser.fullName || currentUser.username,
+    Machine:   navigator.userAgent.substring(0, 60),
+    Timestamp: new Date().toLocaleString('vi-VN'),
+    Status:    'Chua xu ly',
+    Source:    'Web Companion v2.1'
+  };
+
+  try {
+    const id = 'fb_web_' + Date.now();
+    const r = await fetch(`${FB_URL}/Feedbacks/${id}.json`, {
+      method:'PUT', headers:{'Content-Type':'application/json'}, body: JSON.stringify(fbData)
+    });
+    if (!r.ok) throw new Error('Firebase ' + r.status);
+    document.getElementById('fbContent').value = '';
+    showToast('✅ Cảm ơn! Phản hồi đã gửi tới Admin.', '#059669');
+    loadMyFeedbacks();
+    loadUnreadCount();
+  } catch(e) { showToast('❌ Lỗi: ' + e.message, '#EF4444'); }
+}
+
+async function loadMyFeedbacks() {
+  const el = document.getElementById('myFeedbackList');
+  if (!el) return;
+  el.innerHTML = '<div class="loading"><span class="spinner"></span>Đang tải...</div>';
+  try {
+    const raw = await fbGet('Feedbacks').catch(()=>null);
+    if (!raw) { el.innerHTML = '<div style="font-size:12px;color:var(--muted);text-align:center;padding:20px">Chưa có phản hồi nào</div>'; return; }
+
+    const mine = Object.entries(raw)
+      .filter(([,v]) => v.User === currentUser.username)
+      .sort(([,a],[,b]) => (b.Timestamp||'').localeCompare(a.Timestamp||''));
+
+    if (!mine.length) {
+      el.innerHTML = '<div style="font-size:12px;color:var(--muted);text-align:center;padding:20px">Chưa có phản hồi nào</div>';
+      return;
+    }
+
+    el.innerHTML = mine.map(([id, fb]) => {
+      const statusColor = fb.Status === 'Da xu ly' ? '#059669' : '#D97706';
+      const statusText  = fb.Status === 'Da xu ly' ? '✅ Đã xử lý' : '⏳ Chờ xử lý';
+      const prioColor   = fb.Priority==='Cao' ? '#EF4444' : fb.Priority==='Trung bình' ? '#F59E0B' : '#10B981';
+      return `<div style="background:#F9FAFB;border:1px solid #E5E7EB;border-radius:8px;padding:10px 12px">
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:4px">
+          <span style="font-size:11px;font-weight:700;color:#374151">${escHtml(fb.Type||'—')}</span>
+          <span style="font-size:10px;font-weight:700;color:${statusColor}">${statusText}</span>
+        </div>
+        <div style="font-size:12px;color:#374151;margin-bottom:4px">${escHtml((fb.Content||'').substring(0,80))}${(fb.Content||'').length>80?'...':''}</div>
+        <div style="display:flex;align-items:center;justify-content:space-between">
+          <span style="font-size:10px;color:var(--muted)">${fb.Timestamp||''}</span>
+          ${fb.Priority ? `<span style="font-size:10px;font-weight:600;color:${prioColor}">${fb.Priority}</span>` : ''}
+        </div>
+      </div>`;
+    }).join('');
+  } catch(e) { el.innerHTML = '<div style="font-size:12px;color:#EF4444;padding:10px">Lỗi tải</div>'; }
+}
+
+function toggleDark() {
+  document.body.classList.toggle('dark');
+  const btn = document.getElementById('btnDark');
+  const isDark = document.body.classList.contains('dark');
+  if(btn) btn.textContent = isDark ? '☀️' : '🌙';
+  localStorage.setItem('sretc_dark', isDark);
+}
+
+
+// ── Forgot Password via Telegram OTP ──────────────────────────────
+async function showForgotPassword() {
+  const username = prompt('Nhập tên đăng nhập của bạn:');
+  if (!username) return;
+
+  const newPass = prompt('Nhập mật khẩu mới (ít nhất 4 ký tự):');
+  if (!newPass || newPass.length < 4) { alert('Mật khẩu quá ngắn!'); return; }
+
+  const confirmPass = prompt('Xác nhận mật khẩu mới:');
+  if (newPass !== confirmPass) { alert('Mật khẩu xác nhận không khớp!'); return; }
+
+  // Check user exists
+  const msg = document.getElementById('authMsg');
+  msg.textContent = '⏳ Đang kiểm tra tài khoản...';
+  try {
+    const data = await fbGet('Users/' + username);
+    if (!data) { msg.textContent = '❌ Tài khoản không tồn tại!'; return; }
+
+    // Generate 6-digit OTP
+    const otp = Math.floor(100000 + Math.random() * 900000).toString();
+
+    // Get admin chat ID from Firebase (SystemData/TelegramAdminChatId)
+    const adminChatId = await fbGet('SystemData/TelegramAdminChatId').catch(()=>null)
+                        || TG_ADMIN_ID || data.TelegramChatId || '';
+
+    if (TG_TOKEN && adminChatId) {
+      // Send OTP via Telegram
+      const text = encodeURIComponent(
+        `🔑 S-RETC Web - Yêu cầu đặt lại mật khẩu
+` +
+        `Tài khoản: ${username}
+` +
+        `Mã OTP: ${otp}
+` +
+        `Hiệu lực: 5 phút`
+      );
+      await fetch(`https://api.telegram.org/bot${TG_TOKEN}/sendMessage?chat_id=${adminChatId}&text=${text}`);
+      msg.textContent = '';
+      alert(`✅ Mã OTP đã gửi qua Telegram!
+Kiểm tra Telegram và nhập mã OTP.`);
+    } else {
+      // Demo mode: show OTP directly
+      msg.textContent = '';
+      alert(`[DEMO] Mã OTP của bạn: ${otp}
+
+Admin cần điền TelegramAdminChatId vào Firebase SystemData để gửi tự động.`);
+    }
+
+    // Confirm OTP
+    const inputOtp = prompt('Nhập mã OTP 6 số:');
+    if (inputOtp?.trim() !== otp) {
+      msg.textContent = '❌ Mã OTP sai! Thử lại.';
+      return;
+    }
+
+    // Update PasswordWeb = SHA256(newPass)
+    const newHash = await sha256(newPass);
+    const wr = await fetch(`${FB_URL}/Users/${username}/PasswordWeb.json`, {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(newHash)
+    });
+
+    if (wr.ok) {
+      msg.textContent = '';
+      alert('✅ Đặt lại mật khẩu thành công! Vui lòng đăng nhập lại với mật khẩu mới.');
+    } else {
+      // Firebase Rules chặn write → hiện SHA256 để copy vào Console
+      msg.textContent = '';
+      navigator.clipboard.writeText(newHash).catch(()=>{});
+      alert(
+        '⚠️ Không thể tự cập nhật (Firebase Rules).\n\n' +
+        'Nhờ Admin thực hiện 1 trong 2 cách:\n\n' +
+        '① Desktop: AdminPage → Users → 🔑 Reset → nhập mật khẩu mới\n\n' +
+        '② Web (Admin): Admin → Users → 🌐 Kích hoạt\n\n' +
+        '─── HOẶC tự làm (Firebase Console) ───\n' +
+        'Users/' + username + '/PasswordWeb = \n' + newHash + '\n\n' +
+        '(SHA256 đã copy vào clipboard)'
+      );
+    }
+  } catch(e) {
+    msg.textContent = '❌ Lỗi: ' + e.message;
+  }
+}
+
+function showRulesHelp() {
+  document.getElementById('rulesModal').style.display='flex';
+}
+
+
+// ── Admin Panel ────────────────────────────────────────────────────
+
+async function loadUnreadCount() {
+  if (currentUser?.role !== 'Admin') return;
+  try {
+    const raw = await fbGet('Feedbacks').catch(()=>null);
+    if (!raw) return;
+    const unread = Object.values(raw).filter(f => f.Status !== 'Da xu ly').length;
+    // Update topbar badge
+    const badge = document.getElementById('fbBadge');
+    if (badge) { badge.style.display = unread > 0 ? '' : 'none'; badge.textContent = unread; }
+    // Update admin tab badge
+    const badgeTab = document.getElementById('fbBadgeTab');
+    if (badgeTab) { badgeTab.style.display = unread > 0 ? '' : 'none'; badgeTab.textContent = unread; }
+  } catch(e) {}
+}
+
+function adminTab(tab, btn) {
+  ['feedbacks','users','notice','apikeys','calc','library','stats'].forEach(t => {
+    const el = document.getElementById('admin' + t.charAt(0).toUpperCase() + t.slice(1));
+    if (el) el.style.display = t===tab ? '' : 'none';
+  });
+  document.querySelectorAll('#pageAdmin .lib-tab').forEach(b=>b.classList.remove('active'));
+  if(btn) btn.classList.add('active');
+  if(tab==='feedbacks') loadAdminFeedbacks();
+  if(tab==='users')     loadAdminUsers();
+  if(tab==='notice')    loadAdminNotice();
+  if(tab==='apikeys')   loadApiKeys();
+  if(tab==='calc')      { loadCalcSubmissions(); loadCalcCurrentLink(); }
+  if(tab==='library')   loadAdminLibPreview();
+  if(tab==='stats')     loadAdminStats();
+}
+
+// ── Library Admin (Add/View items) ────────────────────────────────
+async function adminAddLibItem() {
+  const cat    = document.getElementById('libAdminCat')?.value || 'TCVN';
+  const name   = document.getElementById('libAdminName')?.value.trim() || '';
+  const link   = document.getElementById('libAdminLink')?.value.trim() || '';
+  const desc   = document.getElementById('libAdminDesc')?.value.trim() || '';
+  const size   = document.getElementById('libAdminSize')?.value.trim() || '';
+  const author = document.getElementById('libAdminAuthor')?.value.trim() || '';
+
+  if (!name) { showToast('❌ Nhập tên tài liệu!', '#EF4444'); return; }
+  if (!link.startsWith('http')) { showToast('❌ Link phải bắt đầu bằng https://...', '#EF4444'); return; }
+
+  const id   = 'doc_' + Date.now();
+  const data = {
+    Name:       name,
+    DriveLink:  link,
+    Description:desc,
+    Size:       size,
+    Author:     author,
+    UpdateDate: new Date().toLocaleDateString('vi-VN'),
+    AddedBy:    currentUser?.username || 'admin'
+  };
+
+  try {
+    const r = await fetch(`${FB_URL}/Library/${cat}/${id}.json`, {
+      method:'PUT', headers:{'Content-Type':'application/json'}, body: JSON.stringify(data)
+    });
+    if (!r.ok) throw new Error('HTTP ' + r.status);
+
+    showToast(`✅ Đã thêm "${name}" vào ${cat}!`, '#059669');
+    // Clear form
+    ['libAdminName','libAdminLink','libAdminDesc','libAdminSize','libAdminAuthor']
+      .forEach(id => { const el = document.getElementById(id); if(el) el.value = ''; });
+    // Sync category selector and reload preview
+    const viewCat = document.getElementById('libAdminViewCat');
+    if (viewCat) viewCat.value = cat;
+    loadAdminLibPreview();
+  } catch(e) { showToast('❌ Lỗi: ' + e.message, '#EF4444'); }
+}
+
+async function loadAdminLibPreview() {
+  const cat = document.getElementById('libAdminViewCat')?.value || 'TCVN';
+  const el  = document.getElementById('libAdminPreview');
+  if (!el) return;
+  el.innerHTML = '<div class="loading"><span class="spinner"></span>Đang tải...</div>';
+  try {
+    const raw = await fbGet('Library/' + cat).catch(()=>null);
+    if (!raw) { el.innerHTML='<div style="font-size:12px;color:var(--muted);padding:10px">Chưa có tài liệu nào</div>'; return; }
+    const items = Object.entries(raw);
+    el.innerHTML = items.map(([id, d]) => `
+      <div style="background:#F9FAFB;border:1px solid #E5E7EB;border-radius:8px;padding:10px 12px;
+                  display:flex;align-items:flex-start;justify-content:space-between;gap:8px">
+        <div style="flex:1;min-width:0">
+          <div style="font-size:12px;font-weight:600;color:#0F172A;word-break:break-word">${escHtml(d.Name||'—')}</div>
+          ${d.Description ? `<div style="font-size:11px;color:#6B7280;margin-top:2px">${escHtml(d.Description.substring(0,60))}</div>` : ''}
+          <div style="font-size:10px;color:#9CA3AF;margin-top:2px">
+            ${d.UpdateDate||''} ${d.Size?'· '+d.Size:''} ${d.Author?'· '+d.Author:''}
+          </div>
+        </div>
+        <button onclick="adminDeleteLibItem('${cat}','${id}','${escHtml(d.Name||'?')}')"
+          style="height:24px;padding:0 8px;background:#FEE2E2;color:#DC2626;border:none;border-radius:4px;font-size:10px;font-weight:600;cursor:pointer;flex-shrink:0">
+          🗑
+        </button>
+      </div>`).join('');
+  } catch(e) { el.innerHTML = `<div style="color:#EF4444;font-size:12px">Lỗi: ${e.message}</div>`; }
+}
+
+async function adminDeleteLibItem(cat, id, name) {
+  if (!confirm(`Xóa tài liệu "${name}"?`)) return;
+  try {
+    const r = await fetch(`${FB_URL}/Library/${cat}/${id}.json`, { method:'DELETE' });
+    if (!r.ok) throw new Error('HTTP ' + r.status);
+    showToast(`🗑 Đã xóa "${name}"`, '#64748B');
+    loadAdminLibPreview();
+  } catch(e) { showToast('❌ Lỗi: ' + e.message, '#EF4444'); }
+}
+
+// ── Calc Submissions (Admin Web) ──────────────────────────────────
+async function loadCalcSubmissions() {
+  const el = document.getElementById('calcSubList');
+  if (!el) return;
+  el.innerHTML = '<div class="loading"><span class="spinner"></span>Đang tải...</div>';
+  try {
+    const raw = await fbGet('SystemData/CalcSubmissions').catch(()=>null);
+    if (!raw) { el.innerHTML='<div style="font-size:12px;color:var(--muted);padding:12px">Chưa có yêu cầu nào</div>'; return; }
+    const items = Object.entries(raw).sort(([,a],[,b])=>(b.Time||'').localeCompare(a.Time||''));
+    el.innerHTML = items.map(([key, d]) => `
+      <div style="background:#F9FAFB;border:1px solid #E5E7EB;border-radius:8px;padding:10px 12px">
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:3px">
+          <span style="font-size:12px;font-weight:700;color:#1E3A8A">👤 ${escHtml(d.User||'?')}</span>
+          <span style="font-size:10px;color:var(--muted)">${escHtml(d.Time||'')}</span>
+        </div>
+        <div style="font-size:12px;color:#374151">📄 ${escHtml(d.FileName||'?')} <span style="color:#9CA3AF">(${d.SizeKB||'?'}KB)</span></div>
+        ${d.Note ? `<div style="font-size:11px;color:#6B7280;margin-top:2px">💬 ${escHtml(d.Note)}</div>` : ''}
+        <div style="margin-top:6px">
+          <span style="font-size:10px;padding:2px 7px;border-radius:10px;font-weight:600;
+            background:${d.Status==='Da xu ly'?'#D1FAE5':'#FEF3C7'};
+            color:${d.Status==='Da xu ly'?'#065F46':'#92400E'}">
+            ${d.Status==='Da xu ly'?'✅ Đã xử lý':'⏳ Chờ xử lý'}
+          </span>
+          ${d.Status!=='Da xu ly' ? `<button onclick="markCalcDone('${key}')"
+            style="margin-left:6px;height:22px;padding:0 8px;background:#059669;color:#fff;border:none;border-radius:5px;font-size:10px;font-weight:600;cursor:pointer">
+            ✓ Xử lý xong
+          </button>` : ''}
+        </div>
+      </div>`).join('');
+  } catch(e) { if(el) el.innerHTML=`<div style="color:#EF4444;font-size:12px;padding:10px">Lỗi: ${e.message}</div>`; }
+}
+
+async function markCalcDone(key) {
+  try {
+    await fetch(`${FB_URL}/SystemData/CalcSubmissions/${key}/Status.json`, {
+      method:'PUT', headers:{'Content-Type':'application/json'}, body:'"Da xu ly"'
+    });
+    showToast('✅ Đã đánh dấu xử lý xong!','#059669');
+    loadCalcSubmissions();
+  } catch(e) { showToast('❌ Lỗi: '+e.message,'#EF4444'); }
+}
+
+async function loadCalcCurrentLink() {
+  try {
+    const raw = await fbGet('SystemData/CalcDriveLink').catch(()=>null);
+    const el = document.getElementById('calcCurrentLink');
+    if (!raw || !raw.Link) { if(el) el.style.display='none'; return; }
+    if (el) el.style.display='';
+    const lt = document.getElementById('calcCurrentLinkText');
+    const ln = document.getElementById('calcCurrentLinkNote');
+    if (lt) lt.textContent = raw.Link;
+    if (ln) ln.textContent = (raw.Note||'') + (raw.UpdatedAt ? ' · ' + raw.UpdatedAt : '');
+    // Pre-fill inputs
+    const li = document.getElementById('adminCalcLink');
+    const ni = document.getElementById('adminCalcNote');
+    if (li) li.value = raw.Link || '';
+    if (ni) ni.value = raw.Note || '';
+  } catch(e) {}
+}
+
+async function adminSaveCalcDriveLink() {
+  const link = document.getElementById('adminCalcLink')?.value.trim() || '';
+  const note = document.getElementById('adminCalcNote')?.value.trim() || '';
+  if (!link.startsWith('http')) { showToast('❌ Link phải bắt đầu bằng https://...','#EF4444'); return; }
+  try {
+    const data = { Link: link, Note: note, UpdatedAt: new Date().toLocaleString('vi-VN'), UpdatedBy: currentUser.username };
+    const r = await fetch(`${FB_URL}/SystemData/CalcDriveLink.json`, {
+      method:'PUT', headers:{'Content-Type':'application/json'}, body: JSON.stringify(data)
+    });
+    if (!r.ok) throw new Error(r.status);
+    showToast('✅ Đã lưu link Drive!','#059669');
+    loadCalcCurrentLink();
+  } catch(e) { showToast('❌ Lỗi: '+e.message,'#EF4444'); }
+}
+
+// ── API Keys management ───────────────────────────────────────────
+const API_KEY_FIELDS = [
+  { key:'GroqApiKey',      label:'Groq API Key',         placeholder:'gsk_...',  hint:'Dùng cho Chatbot AI + CAD Agent + OCR' },
+  { key:'OpenRouterApiKey',label:'OpenRouter API Key',   placeholder:'sk-or-...', hint:'Model dự phòng' },
+  { key:'ImgBbApiKey',     label:'ImgBB API Key',        placeholder:'abc123...', hint:'Upload ảnh avatar' },
+  { key:'TelegramAdminChatId', label:'Telegram Admin Chat ID', placeholder:'123456789', hint:'Nhận OTP reset mật khẩu' },
+];
+
+async function loadApiKeys() {
+  const el = document.getElementById('apiKeysList');
+  if (!el) return;
+  el.innerHTML = '<div class="loading"><span class="spinner"></span>Đang tải...</div>';
+  try {
+    const data = await fbGet('SystemData').catch(()=>({}));
+    el.innerHTML = API_KEY_FIELDS.map(f => `
+      <div>
+        <div style="font-size:11px;font-weight:700;color:#374151;margin-bottom:3px">${f.label}</div>
+        <div style="font-size:10px;color:#9CA3AF;margin-bottom:4px">💡 ${f.hint}</div>
+        <div style="display:flex;gap:6px">
+          <input id="apikey_${f.key}" type="password" value="${escHtml(data[f.key]||'')}"
+            placeholder="${f.placeholder}"
+            style="flex:1;height:34px;border:1.5px solid #E2E8F0;border-radius:6px;padding:0 10px;font-size:12px;font-family:monospace"/>
+          <button onclick="toggleKeyVisibility('apikey_${f.key}')"
+            style="height:34px;padding:0 8px;background:#F1F5F9;border:1px solid #E2E8F0;border-radius:6px;cursor:pointer;font-size:13px"
+            title="Hiện/ẩn">👁</button>
+        </div>
+      </div>`).join('');
+  } catch(e) { el.innerHTML = '<div style="color:#EF4444">Lỗi tải: '+e.message+'</div>'; }
+}
+
+function toggleKeyVisibility(inputId) {
+  const inp = document.getElementById(inputId);
+  if (inp) inp.type = inp.type === 'password' ? 'text' : 'password';
+}
+
+async function saveApiKeys() {
+  try {
+    for (const f of API_KEY_FIELDS) {
+      const val = document.getElementById('apikey_' + f.key)?.value.trim() || '';
+      if (val) {
+        await fetch(`${FB_URL}/SystemData/${f.key}.json`, {
+          method:'PUT', headers:{'Content-Type':'application/json'}, body: JSON.stringify(val)
+        });
+      }
+    }
+    showToast('✅ Đã lưu tất cả API Keys!', '#059669');
+  } catch(e) { showToast('❌ Lỗi: ' + e.message, '#EF4444'); }
+}
+
+// ── Admin Stats ──────────────────────────────────────────────────
+async function loadAdminStats() {
+  const el = document.getElementById('adminStatsGrid');
+  if (!el) return;
+  el.innerHTML = '<div class="loading"><span class="spinner"></span>Đang tải thống kê...</div>';
+  try {
+    const [usersRaw, fbRaw] = await Promise.all([
+      fbGet('Users').catch(()=>({})),
+      fbGet('Feedbacks').catch(()=>({}))
+    ]);
+    const users = usersRaw ? Object.entries(usersRaw) : [];
+    const feedbacks = fbRaw ? Object.values(fbRaw) : [];
+    const roles = {};
+    users.forEach(([,u]) => { const r = u.Role||'NguoiDung'; roles[r] = (roles[r]||0)+1; });
+    const fbDone = feedbacks.filter(f=>f.Status==='Da xu ly').length;
+    const fbPending = feedbacks.length - fbDone;
+
+    el.innerHTML = `
+      <div class="chart-card">
+        <div class="chart-title">👥 Tổng quan Users</div>
+        <div style="font-size:28px;font-weight:800;color:#1E3A8A;margin:8px 0">${users.length}</div>
+        <div style="font-size:12px;color:#6B7280">tài khoản đăng ký</div>
+        <div style="margin-top:12px;display:flex;flex-direction:column;gap:5px">
+          ${Object.entries(roles).map(([r,c])=>`
+            <div class="bar-row">
+              <div class="bar-label">${r}</div>
+              <div class="bar-track"><div class="bar-fill" style="width:${(c/users.length*100).toFixed(0)}%;background:#3B82F6"></div></div>
+              <div class="bar-val">${c}</div>
+            </div>`).join('')}
+        </div>
+      </div>
+      <div class="chart-card">
+        <div class="chart-title">💬 Phản hồi hệ thống</div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:8px">
+          <div style="text-align:center;padding:12px;background:#FEF3C7;border-radius:8px">
+            <div style="font-size:24px;font-weight:800;color:#92400E">${fbPending}</div>
+            <div style="font-size:11px;color:#92400E;font-weight:600">Chờ xử lý</div>
+          </div>
+          <div style="text-align:center;padding:12px;background:#D1FAE5;border-radius:8px">
+            <div style="font-size:24px;font-weight:800;color:#065F46">${fbDone}</div>
+            <div style="font-size:11px;color:#065F46;font-weight:600">Đã xử lý</div>
+          </div>
+        </div>
+        <div style="margin-top:10px">
+          ${feedbacks.slice(-3).reverse().map(f=>`
+            <div style="font-size:11px;padding:4px 0;border-bottom:1px solid #F1F5F9;color:#374151">
+              ${f.Type||'—'}: ${escHtml((f.Content||'').substring(0,40))}...
+            </div>`).join('')}
+        </div>
+      </div>
+      <div class="chart-card">
+        <div class="chart-title">📋 Hoạt động gần đây</div>
+        <div style="display:flex;flex-direction:column;gap:6px;margin-top:4px">
+          ${users.slice(-5).reverse().map(([u,d])=>`
+            <div style="display:flex;align-items:center;gap:8px;font-size:12px">
+              <div style="width:28px;height:28px;border-radius:50%;background:#DBEAFE;display:flex;align-items:center;
+                justify-content:center;font-weight:700;color:#1E3A8A;font-size:11px;flex-shrink:0">
+                ${(d.FullName||u)[0].toUpperCase()}
+              </div>
+              <div>
+                <div style="font-weight:600">${escHtml(d.FullName||u)}</div>
+                <div style="color:#9CA3AF">${d.Role||'NguoiDung'} · ${d.PasswordWeb?'✅ Web':'⏳ Chưa kích hoạt web'}</div>
+              </div>
+            </div>`).join('')}
+        </div>
+      </div>`;
+  } catch(e) { el.innerHTML = '<div style="color:#EF4444;padding:20px">Lỗi tải thống kê: '+e.message+'</div>'; }
+}
+
+// ── Reset password (Admin) ────────────────────────────────────────
+async function adminResetPass(username) {
+  const newPass = prompt(`Đặt mật khẩu mới cho "${username}" (tối thiểu 4 ký tự):`);
+  if (!newPass || newPass.length < 4) { showToast('❌ Mật khẩu không hợp lệ', '#EF4444'); return; }
+  try {
+    const hash = await sha256(newPass);
+    await fetch(`${FB_URL}/Users/${username}/PasswordWeb.json`, {
+      method:'PUT', headers:{'Content-Type':'application/json'}, body: JSON.stringify(hash)
+    });
+    showToast(`✅ Đã reset mật khẩu cho ${username}`, '#059669');
+  } catch(e) { showToast('❌ Lỗi: '+e.message, '#EF4444'); }
+}
+
+async function loadAdminFeedbacks() {
+  const el = document.getElementById('fbList');
+  el.innerHTML = '<div class="loading"><span class="spinner"></span>Đang tải...</div>';
+  try {
+    const raw = await fbGet('Feedbacks');
+    if (!raw) { el.innerHTML='<div class="loading">Chưa có phản hồi nào</div>'; return; }
+    const items = Object.entries(raw).map(([id,v])=>({id,...v}))
+      .sort((a,b)=>(b.Timestamp||'').localeCompare(a.Timestamp||''));
+    el.innerHTML = items.map(fb=>`
+      <div style="background:#fff;border:1px solid #E2E8F0;border-radius:10px;padding:16px">
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px">
+          <span style="font-size:13px;font-weight:700;color:#1E3A8A">${fb.Type||'Góp ý'}</span>
+          <div style="display:flex;align-items:center;gap:8px">
+            <span style="font-size:11px;color:#64748B">${fb.Timestamp||''}</span>
+            <span style="background:${fb.Status==='Da xu ly'?'#D1FAE5':'#FEF3C7'};
+                         color:${fb.Status==='Da xu ly'?'#065F46':'#92400E'};
+                         padding:2px 8px;border-radius:12px;font-size:11px;font-weight:600">
+              ${fb.Status||'Chua xu ly'}
+            </span>
+            <button onclick="markFbDone('${fb.id}')"
+                    style="height:26px;padding:0 10px;background:#10B981;color:#fff;border:none;
+                           border-radius:6px;font-size:11px;font-weight:600;cursor:pointer">
+              ✔ Xong
+            </button>
+          </div>
+        </div>
+        <div style="font-size:13px;color:#374151;margin-bottom:6px">${escHtml(fb.Content||'')}</div>
+        <div style="font-size:11px;color:#64748B">👤 ${fb.FullName||fb.User||'?'} · 💻 ${fb.Machine||''} · ${fb.Source||'Desktop'}</div>
+      </div>`).join('');
+  } catch(e) { el.innerHTML='<div class="loading">Lỗi tải phản hồi — kiểm tra Firebase Rules</div>'; }
+}
+
+async function markFbDone(id) {
+  try {
+    await fetch(`${FB_URL}/Feedbacks/${id}/Status.json`, {
+      method:'PUT', headers:{'Content-Type':'application/json'}, body:'"Da xu ly"'
+    });
+    showToast('✅ Đã đánh dấu xử lý xong', '#059669');
+    loadAdminFeedbacks();
+  } catch(e) { showToast('❌ Lỗi: '+e.message,'#EF4444'); }
+}
+
+async function loadAdminUsers() {
+  const el = document.getElementById('userList');
+  el.innerHTML = '<div class="loading"><span class="spinner"></span>Đang tải...</div>';
+  try {
+    const raw = await fbGet('Users');
+    if (!raw) { el.innerHTML='<div class="loading">Không tải được</div>'; return; }
+    const users = Object.entries(raw).map(([u,v])=>({username:u,...v}));
+    el.innerHTML = `
+      <table style="width:100%;border-collapse:collapse;font-size:12px">
+        <thead>
+          <tr style="background:#F8FAFC">
+            <th style="padding:8px 12px;text-align:left;font-weight:700;color:#374151;border-bottom:1px solid #E2E8F0">Tài khoản</th>
+            <th style="padding:8px 12px;text-align:left;font-weight:700;color:#374151;border-bottom:1px solid #E2E8F0">Họ tên</th>
+            <th style="padding:8px 12px;text-align:left;font-weight:700;color:#374151;border-bottom:1px solid #E2E8F0">Role</th>
+            <th style="padding:8px 12px;text-align:center;font-weight:700;color:#374151;border-bottom:1px solid #E2E8F0">Web</th>
+            <th style="padding:8px 12px;text-align:center;font-weight:700;color:#374151;border-bottom:1px solid #E2E8F0">Hành động</th>
+          </tr>
+        </thead>
+        <tbody>
+          ${users.map(u=>`
+            <tr style="border-bottom:1px solid #F1F5F9">
+              <td style="padding:8px 12px;font-weight:600;color:#0F172A">${escHtml(u.username)}</td>
+              <td style="padding:8px 12px;color:#374151">${escHtml(u.FullName||'—')}</td>
+              <td style="padding:8px 12px">
+                <span style="background:${u.Role==='Admin'?'#FEF3C7':'#EFF6FF'};
+                             color:${u.Role==='Admin'?'#92400E':'#1E40AF'};
+                             padding:2px 6px;border-radius:10px;font-size:10px;font-weight:600">
+                  ${u.Role||'NguoiDung'}
+                </span>
+              </td>
+              <td style="padding:8px 12px;text-align:center">
+                ${u.PasswordWeb
+                  ? '<span style="color:#059669;font-size:13px" title="Đã có mật khẩu web">✅</span>'
+                  : `<button onclick="adminActivateWeb('${u.username}')"
+                      style="height:22px;padding:0 6px;background:#7C3AED;color:#fff;border:none;border-radius:4px;font-size:10px;font-weight:700;cursor:pointer"
+                      title="Đặt mật khẩu web cho user này — không cần Firebase Rules">
+                      🌐 Kích hoạt
+                    </button>`}
+              </td>
+              <td style="padding:8px 12px;text-align:center">
+                ${u.IsApproved===false
+                  ? `<button onclick="approveUser('${u.username}')" style="height:24px;padding:0 7px;background:#10B981;color:#fff;border:none;border-radius:4px;font-size:10px;font-weight:700;cursor:pointer;margin-right:3px">✓ Duyệt</button>`
+                  : ''}
+                <button onclick="adminResetPass('${u.username}')"
+                  style="height:24px;padding:0 7px;background:#EFF6FF;color:#1E40AF;border:1px solid #BFDBFE;border-radius:4px;font-size:10px;font-weight:600;cursor:pointer">
+                  🔑 Reset
+                </button>
+              </td>
+            </tr>`).join('')}
+        </tbody>
+      </table>
+      <div style="padding:8px 14px;font-size:11px;color:#9CA3AF;border-top:1px solid #F1F5F9">
+        ✅ = Đã kích hoạt web  ·  🌐 = Admin nhấn để kích hoạt (không cần sửa Firebase Rules)
+      </div>`;
+  } catch(e) { el.innerHTML='<div class="loading">Lỗi tải users: '+e.message+'</div>'; }
+}
+
+async function adminActivateWeb(username) {
+  const pass = prompt('Đặt mật khẩu web cho "' + username + '":\n(User sẽ dùng mật khẩu này để đăng nhập web)\nTối thiểu 4 ký tự:');
+  if (!pass || pass.length < 4) { showToast('❌ Mật khẩu tối thiểu 4 ký tự!','#EF4444'); return; }
+  try {
+    const hash = await sha256(pass);
+    const r = await fetch(`${FB_URL}/Users/${username}/PasswordWeb.json`, {
+      method:'PUT', headers:{'Content-Type':'application/json'}, body: JSON.stringify(hash)
+    });
+    if (!r.ok) throw new Error('HTTP ' + r.status);
+    showToast('✅ Đã kích hoạt web cho ' + username + '! Mật khẩu: ' + pass, '#059669');
+    loadAdminUsers();
+  } catch(e) { showToast('❌ Lỗi: ' + e.message,'#EF4444'); }
+}
+
+
+async function approveUser(username) {
+  try {
+    await fetch(`${FB_URL}/Users/${username}/IsApproved.json`, {
+      method:'PUT', headers:{'Content-Type':'application/json'}, body:'true'
+    });
+    showToast(`✅ Đã duyệt tài khoản: ${username}`, '#059669');
+    loadAdminUsers();
+  } catch(e) { showToast('❌ Lỗi: '+e.message,'#EF4444'); }
+}
+
+async function loadAdminNotice() {
+  try {
+    const notice = await fbGet('SystemData/AdminNotice').catch(()=>null);
+    const el = document.getElementById('noticeInput');
+    if (el) el.value = notice || '';
+  } catch(e) {}
+}
+
+async function saveNotice() {
+  const text = document.getElementById('noticeInput')?.value.trim() || '';
+  try {
+    await fetch(`${FB_URL}/SystemData/AdminNotice.json`, {
+      method:'PUT', headers:{'Content-Type':'application/json'}, body: JSON.stringify(text)
+    });
+    showToast('✅ Đã lưu thông báo!', '#059669');
+  } catch(e) { showToast('❌ Lỗi: '+e.message,'#EF4444'); }
+}
+
+async function clearNotice() {
+  if (!confirm('Xóa thông báo Dashboard?')) return;
+  try {
+    await fetch(`${FB_URL}/SystemData/AdminNotice.json`,
+      { method:'PUT', headers:{'Content-Type':'application/json'}, body:JSON.stringify('') });
+    document.getElementById('noticeInput').value = '';
+    showToast('🗑 Đã xóa thông báo', '#64748B');
+  } catch(e) { showToast('❌ Lỗi: '+e.message,'#EF4444'); }
+}
+
+// Load admin data when page shown
+const _origShowPage = showPage;
+// ── Init ────────────────────────────────────────────────────────────
+document.addEventListener('keydown', e=>{ if(e.key==='Enter'&&document.getElementById('authScreen').style.display!=='none') doLogin(); });
+if (localStorage.getItem('sretc_dark')==='true') {
+  document.body.classList.add('dark');
+  const btn=document.getElementById('btnDark'); if(btn) btn.textContent='☀️';
+}
+const saved = sessionStorage.getItem('sretc_user');
+// Show admin nav if admin
+function toggleMobileMenu() {
+  const nav = document.getElementById('mobileNav');
+  if (nav) nav.style.display = nav.style.display === 'flex' ? 'none' : 'flex';
+}
+
+function updateAdminNav() {
+  const adminBtn = document.getElementById('navAdmin');
+  if (adminBtn && currentUser?.role === 'Admin') adminBtn.style.display = '';
+}
+if (saved) { currentUser=JSON.parse(saved); showApp(); document.getElementById('authScreen').style.display='none'; }
+</script>
+
+<!-- PWA: Service Worker + Install Banner -->
+<div id="pwaInstallBanner" style="display:none;position:fixed;bottom:16px;left:50%;transform:translateX(-50%);
+  background:#1E3A8A;color:#fff;border-radius:12px;padding:12px 20px;z-index:9999;
+  display:none;align-items:center;gap:12px;box-shadow:0 4px 20px rgba(0,0,0,.3);
+  max-width:380px;width:calc(100% - 32px)">
+  <span style="font-size:22px">🚀</span>
+  <div style="flex:1">
+    <div style="font-weight:700;font-size:13px">Cài S-RETC về máy</div>
+    <div style="font-size:11px;opacity:.8">Dùng offline, nhanh hơn trên mobile</div>
+  </div>
+  <button id="pwaInstallBtn" style="background:#3B82F6;color:#fff;border:none;border-radius:8px;
+    padding:6px 14px;font-weight:700;font-size:12px;cursor:pointer">Cài</button>
+  <button onclick="document.getElementById('pwaInstallBanner').style.display='none'"
+    style="background:rgba(255,255,255,.15);color:#fff;border:none;border-radius:6px;
+    padding:4px 8px;font-size:13px;cursor:pointer">✕</button>
+</div>
+
+<script>
+// Register Service Worker
+if ('serviceWorker' in navigator) {
+  window.addEventListener('load', () => {
+    navigator.serviceWorker.register('./sw.js')
+      .then(r => console.log('SW registered:', r.scope))
+      .catch(e => console.log('SW error:', e));
+  });
+}
+
+// PWA Install prompt
+let _deferredPrompt = null;
+window.addEventListener('beforeinstallprompt', e => {
+  e.preventDefault();
+  _deferredPrompt = e;
+  const banner = document.getElementById('pwaInstallBanner');
+  if (banner) banner.style.display = 'flex';
+});
+const installBtn = document.getElementById('pwaInstallBtn');
+if (installBtn) installBtn.addEventListener('click', async () => {
+  if (!_deferredPrompt) return;
+  _deferredPrompt.prompt();
+  const { outcome } = await _deferredPrompt.userChoice;
+  console.log('PWA install outcome:', outcome);
+  _deferredPrompt = null;
+  const banner = document.getElementById('pwaInstallBanner');
+  if (banner) banner.style.display = 'none';
+});
+window.addEventListener('appinstalled', () => {
+  console.log('S-RETC PWA installed');
+  _deferredPrompt = null;
+});
+</script>
+</body>
+</html>

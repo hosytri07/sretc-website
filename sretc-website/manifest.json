@@ -1,0 +1,31 @@
+{
+  "name": "S-RETC Toolkit",
+  "short_name": "S-RETC",
+  "description": "Hỗ trợ kỹ sư cầu đường Việt Nam — Dự toán, CAD, OCR, Chatbot AI",
+  "start_url": "./",
+  "display": "standalone",
+  "background_color": "#0A1628",
+  "theme_color": "#0A1628",
+  "orientation": "any",
+  "lang": "vi",
+  "categories": ["utilities", "productivity"],
+  "icons": [
+    {
+      "src": "icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ],
+  "shortcuts": [
+    { "name": "Dashboard", "url": "./#dash",     "description": "Xem tổng quan dự án" },
+    { "name": "Dự án",     "url": "./#projects", "description": "Quản lý dự án" },
+    { "name": "Chatbot",   "url": "./#chat",      "description": "Hỏi AI S-RETC" }
+  ]
+}
