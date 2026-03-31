@@ -298,6 +298,28 @@ footer {
 .footer-links a:hover { color:var(--white); }
 .footer-copy { font-size:12px; color:var(--muted); }
 
+/* ── COUNTDOWN ── */
+.cd-box {
+  background:rgba(59,130,246,.15);border:1px solid rgba(59,130,246,.3);
+  border-radius:10px;padding:10px 16px;min-width:70px;text-align:center;
+}
+.cd-box span {
+  display:block;font-size:28px;font-weight:900;color:var(--sky);
+  font-family:"JetBrains Mono",monospace;line-height:1;
+}
+.cd-box small {
+  display:block;font-size:11px;color:var(--muted);font-weight:600;
+  margin-top:4px;letter-spacing:.5px;text-transform:uppercase;
+}
+.cd-sep {
+  font-size:28px;font-weight:900;color:var(--muted);
+  display:flex;align-items:center;padding-bottom:18px;
+}
+/* Khi đã mở */
+.btn-dl-main.locked {
+  background:linear-gradient(135deg,#374151,#4B5563) !important;
+  cursor:not-allowed;box-shadow:none;opacity:.7;
+}
 /* ── ANIMATIONS ── */
 @keyframes fadeDown {
   from { opacity:0; transform:translateY(-20px); }
@@ -338,7 +360,7 @@ footer {
 
 <!-- HERO -->
 <section class="hero">
-  <div class="hero-badge">✦ Phiên bản 1.0.0 — Mới nhất</div>
+  <div class="hero-badge">✦ Phiên bản 1.0.0 — Phát hành 31/03/2026</div>
   <h1>
     Công cụ thiết yếu<br>
     <span class="line2">cho kỹ sư cầu đường</span>
@@ -462,9 +484,27 @@ footer {
 <!-- DOWNLOAD -->
 <section class="download" id="download">
   <div class="download-box reveal">
-    <span class="download-version">✓ Phiên bản 1.0.0 — Ổn định</span>
+    <span class="download-version">✓ Phiên bản 1.0.0 — Phát hành chính thức 10/04/2026</span>
     <h2>Tải S-RETC Toolkit</h2>
     <p>Bộ cài đặt đầy đủ, không cần cài thêm phần mềm khác.<br>Hỗ trợ Windows 7/10/11 (32-bit và 64-bit).</p>
+
+    <!-- COUNTDOWN -->
+    <div id="countdownWrap" style="margin:0 0 28px;padding:20px 24px;
+         background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.12);
+         border-radius:14px">
+      <div style="font-size:12px;font-weight:700;color:var(--sky);letter-spacing:1px;margin-bottom:14px">
+        ⏳ MỞ TẢI XUỐNG LÚC 9:00 NGÀY 10/04/2026
+      </div>
+      <div style="display:flex;justify-content:center;gap:12px;flex-wrap:wrap" id="cdBoxes">
+        <div class="cd-box"><span id="cd-days">--</span><small>Ngày</small></div>
+        <div class="cd-sep">:</div>
+        <div class="cd-box"><span id="cd-hours">--</span><small>Giờ</small></div>
+        <div class="cd-sep">:</div>
+        <div class="cd-box"><span id="cd-mins">--</span><small>Phút</small></div>
+        <div class="cd-sep">:</div>
+        <div class="cd-box"><span id="cd-secs">--</span><small>Giây</small></div>
+      </div>
+    </div>
 
     <div class="download-grid">
       <div class="req-item">
@@ -497,8 +537,7 @@ footer {
       </div>
     </div>
 
-    <a href="https://github.com/hosytri07/sretc-releases/releases/download/v1.0.0/SRETC_Toolkit_Setup_v1.0.0.exe"
-       class="btn-dl-main" id="downloadBtn" onclick="trackDownload()">
+    <a href="#" class="btn-dl-main locked" id="downloadBtn" onclick="return handleDownload(event)">
       ⬇ Tải SRETC_Toolkit_Setup_v1.0.0.exe
     </a>
     <p class="dl-info">
@@ -561,7 +600,7 @@ footer {
   <div class="changelog-box reveal">
     <div class="changelog-header">
       <h3>📋 Lịch sử cập nhật</h3>
-      <span class="v-badge">v1.0.0</span>
+      <span class="v-badge">v1.0.0 — 31/03/2026</span>
     </div>
     <div class="changelog-body">
       <div class="cl-section">
@@ -582,14 +621,53 @@ footer {
 </section>
 
 <!-- FOOTER -->
+<!-- AUTHOR SECTION -->
+<section style="padding:40px 5%">
+  <div style="max-width:720px;margin:0 auto;background:var(--card);border:1px solid var(--border);
+       border-radius:16px;padding:32px;display:flex;align-items:center;gap:28px;flex-wrap:wrap">
+    <div style="width:72px;height:72px;border-radius:50%;flex-shrink:0;
+         background:linear-gradient(135deg,#1E3A8A,#3B82F6);
+         display:flex;align-items:center;justify-content:center;
+         font-size:28px;font-weight:900;color:#fff">HT</div>
+    <div style="flex:1;min-width:200px">
+      <div style="font-size:11px;font-weight:700;color:var(--sky);letter-spacing:1px;margin-bottom:6px">
+        TÁC GIẢ
+      </div>
+      <div style="font-size:20px;font-weight:800;margin-bottom:6px">Hồ Sỹ Trí</div>
+      <div style="font-size:14px;color:var(--muted);line-height:1.6">
+        Kỹ sư thiết kế cầu đường · Phát triển S-RETC Toolkit
+      </div>
+    </div>
+    <div style="display:flex;flex-direction:column;gap:10px">
+      <a href="tel:0969580657"
+         style="display:flex;align-items:center;gap:8px;background:rgba(59,130,246,.15);
+                border:1px solid rgba(59,130,246,.3);color:var(--sky);
+                padding:10px 18px;border-radius:10px;text-decoration:none;font-size:14px;font-weight:600">
+        📞 0969 580 657
+      </a>
+      <a href="/app/"
+         style="display:flex;align-items:center;gap:8px;background:rgba(16,185,129,.15);
+                border:1px solid rgba(16,185,129,.3);color:var(--green);
+                padding:10px 18px;border-radius:10px;text-decoration:none;font-size:14px;font-weight:600">
+        🌐 Dùng Web App
+      </a>
+    </div>
+  </div>
+</section>
+
 <footer>
   <div class="footer-brand">S-<span>RETC</span> Toolkit</div>
   <div class="footer-links">
     <a href="#download">Tải xuống</a>
     <a href="/app/">Web App</a>
-    <a href="mailto:support@sretc.app">Liên hệ</a>
+    <a href="tel:0969580657">📞 0969 580 657</a>
+    <a href="#contact">Liên hệ</a>
   </div>
-  <div class="footer-copy">© 2025 S-RETC Team · Dành cho kỹ sư cầu đường VN</div>
+  <div class="footer-copy">
+    © 2025 · Tác giả: <strong style="color:var(--white)">Hồ Sỹ Trí</strong>
+    · 📞 <a href="tel:0969580657" style="color:var(--muted);text-decoration:none">0969 580 657</a>
+    · Dành cho kỹ sư cầu đường Việt Nam
+  </div>
 </footer>
 
 <script>
@@ -599,19 +677,71 @@ const obs = new IntersectionObserver(entries => {
 }, { threshold:.12 });
 document.querySelectorAll('.reveal').forEach(el => obs.observe(el));
 
-// Track download
-function trackDownload() {
-  const btn = document.getElementById('downloadBtn');
-  btn.textContent = '⏳ Đang tải...';
-  setTimeout(()=>{ btn.innerHTML = '⬇ Tải SRETC_Toolkit_Setup_v1.0.0.exe'; }, 3000);
+// ── COUNTDOWN đến 9:00 ngày 10/04/2026 ──────────────────────
+const RELEASE_TIME = new Date('2026-04-10T09:00:00+07:00').getTime();
+const DL_URL = 'https://github.com/hosytri07/sretc-releases/releases/download/v1.0.0/SRETC_Toolkit_Setup_v1.0.0.exe';
+
+function pad(n) { return String(n).padStart(2,'0'); }
+
+function updateCountdown() {
+  const now  = Date.now();
+  const diff = RELEASE_TIME - now;
+  const btn  = document.getElementById('downloadBtn');
+  const wrap = document.getElementById('countdownWrap');
+
+  if (diff <= 0) {
+    // ĐÃ MỞ — unlock nút download
+    if (wrap) wrap.style.display = 'none';
+    if (btn) {
+      btn.classList.remove('locked');
+      btn.href = DL_URL;
+      btn.innerHTML = '⬇ Tải SRETC_Toolkit_Setup_v1.0.0.exe';
+    }
+    return;
+  }
+
+  // Tính thời gian còn lại
+  const days  = Math.floor(diff / 86400000);
+  const hours = Math.floor((diff % 86400000) / 3600000);
+  const mins  = Math.floor((diff % 3600000)  / 60000);
+  const secs  = Math.floor((diff % 60000)    / 1000);
+
+  const dEl = document.getElementById('cd-days');
+  const hEl = document.getElementById('cd-hours');
+  const mEl = document.getElementById('cd-mins');
+  const sEl = document.getElementById('cd-secs');
+
+  if (dEl) dEl.textContent = pad(days);
+  if (hEl) hEl.textContent = pad(hours);
+  if (mEl) mEl.textContent = pad(mins);
+  if (sEl) sEl.textContent = pad(secs);
+
+  // Cập nhật text nút
+  if (btn && btn.classList.contains('locked')) {
+    btn.innerHTML = '🔒 Mở lúc 9:00 — 10/04/2026';
+  }
 }
 
-// Dynamic download count (fake but nice UX)
-document.addEventListener('DOMContentLoaded', () => {
-  const base = 127;
-  const extra = Math.floor(Math.random() * 30);
-  // Could display download count if you have analytics
-});
+// Chạy ngay và mỗi giây
+updateCountdown();
+setInterval(updateCountdown, 1000);
+
+// Xử lý click nút khi còn locked
+function handleDownload(e) {
+  const btn = document.getElementById('downloadBtn');
+  if (btn && btn.classList.contains('locked')) {
+    e.preventDefault();
+    // Rung nhẹ để báo chưa mở
+    btn.style.transform = 'translateX(-4px)';
+    setTimeout(()=>btn.style.transform='translateX(4px)',80);
+    setTimeout(()=>btn.style.transform='',160);
+    return false;
+  }
+  // Đã mở → track download
+  btn.innerHTML = '⏳ Đang tải...';
+  setTimeout(()=>{ btn.innerHTML = '⬇ Tải SRETC_Toolkit_Setup_v1.0.0.exe'; }, 3000);
+  return true;
+}
 </script>
 </body>
 </html>
