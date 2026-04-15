@@ -1,0 +1,170 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Trình tạo QR Code Tải Trực Tiếp Google Drive</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: #f0f2f5;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            margin: 0;
+        }
+        .container {
+            background-color: white;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+            width: 100%;
+            max-width: 450px;
+            text-align: center;
+        }
+        h2 {
+            color: #1a73e8;
+            margin-bottom: 20px;
+        }
+        input[type="text"] {
+            width: 90%;
+            padding: 12px;
+            margin-bottom: 15px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            font-size: 14px;
+        }
+        button {
+            background-color: #1a73e8;
+            color: white;
+            border: none;
+            padding: 12px 20px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 16px;
+            font-weight: bold;
+            transition: background-color 0.3s;
+            width: 100%;
+        }
+        button:hover {
+            background-color: #1557b0;
+        }
+        .result-section {
+            margin-top: 25px;
+            display: none;
+            flex-direction: column;
+            align-items: center;
+        }
+        #qrcode {
+            margin: 20px 0;
+            padding: 10px;
+            background: white;
+            border: 1px solid #eee;
+            border-radius: 8px;
+        }
+        .direct-link {
+            word-break: break-all;
+            background: #f8f9fa;
+            padding: 10px;
+            border-radius: 5px;
+            font-size: 13px;
+            color: #333;
+            margin-bottom: 15px;
+            border: 1px solid #ddd;
+            width: 100%;
+            box-sizing: border-box;
+        }
+        .error {
+            color: red;
+            font-size: 14px;
+            margin-top: 10px;
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h2>Tạo QR Code Tải GDrive</h2>
+    <p style="font-size: 14px; color: #555; margin-bottom: 20px;">Nhập link Google Drive của bạn (File phải được cấp quyền <strong>"Bất kỳ ai có liên kết"</strong>).</p>
+    
+    <input type="text" id="driveLink" placeholder="Dán link Google Drive vào đây...">
+    <button onclick="generateQR()">Tạo Mã QR</button>
+    <div id="errorMessage" class="error"></div>
+
+    <div class="result-section" id="resultSection">
+        <p><strong>Link tải trực tiếp:</strong></p>
+        <div class="direct-link" id="directLinkDisplay"></div>
+        <button onclick="copyLink()" style="background-color: #34a853; margin-bottom: 15px;">Copy Link</button>
+        <p><strong>Quét mã để tải:</strong></p>
+        <div id="qrcode"></div>
+    </div>
+</div>
+
+<script>
+    // Hàm trích xuất ID từ link GDrive
+    function getDriveFileId(url) {
+        let match = url.match(/\/d\/([a-zA-Z0-9_-]+)/);
+        if (match) return match[1];
+        
+        match = url.match(/id=([a-zA-Z0-9_-]+)/);
+        if (match) return match[1];
+        
+        return null;
+    }
+
+    function generateQR() {
+        const inputUrl = document.getElementById('driveLink').value.trim();
+        const resultSection = document.getElementById('resultSection');
+        const qrContainer = document.getElementById('qrcode');
+        const directLinkDisplay = document.getElementById('directLinkDisplay');
+        const errorMessage = document.getElementById('errorMessage');
+
+        // Xóa thông báo lỗi và QR cũ
+        errorMessage.innerText = "";
+        qrContainer.innerHTML = "";
+        resultSection.style.display = 'none';
+
+        if (!inputUrl) {
+            errorMessage.innerText = "Vui lòng nhập link Google Drive!";
+            return;
+        }
+
+        const fileId = getDriveFileId(inputUrl);
+
+        if (!fileId) {
+            errorMessage.innerText = "Link Google Drive không hợp lệ. Vui lòng kiểm tra lại!";
+            return;
+        }
+
+        // Tạo link tải trực tiếp
+        const directUrl = `https://drive.google.com/uc?export=download&id=${fileId}`;
+        directLinkDisplay.innerText = directUrl;
+
+        // Tạo mã QR
+        new QRCode(qrContainer, {
+            text: directUrl,
+            width: 200,
+            height: 200,
+            colorDark : "#000000",
+            colorLight : "#ffffff",
+            correctLevel : QRCode.CorrectLevel.H
+        });
+
+        // Hiển thị kết quả
+        resultSection.style.display = 'flex';
+    }
+
+    function copyLink() {
+        const directLink = document.getElementById('directLinkDisplay').innerText;
+        navigator.clipboard.writeText(directLink).then(() => {
+            alert('Đã copy link tải trực tiếp!');
+        }).catch(err => {
+            console.error('Lỗi copy: ', err);
+        });
+    }
+</script>
+
+</body>
+</html>
