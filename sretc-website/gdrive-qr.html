@@ -14,6 +14,8 @@
             align-items: center;
             min-height: 100vh;
             margin: 0;
+            padding: 20px;
+            box-sizing: border-box;
         }
         .container {
             background-color: white;
@@ -21,22 +23,23 @@
             border-radius: 10px;
             box-shadow: 0 4px 12px rgba(0,0,0,0.1);
             width: 100%;
-            max-width: 450px;
+            max-width: 500px;
             text-align: center;
         }
         h2 {
             color: #1a73e8;
-            margin-bottom: 20px;
+            margin-bottom: 10px;
         }
         input[type="text"] {
-            width: 90%;
+            width: 100%;
             padding: 12px;
             margin-bottom: 15px;
             border: 1px solid #ccc;
             border-radius: 5px;
             font-size: 14px;
+            box-sizing: border-box;
         }
-        button {
+        .btn-primary {
             background-color: #1a73e8;
             color: white;
             border: none;
@@ -48,26 +51,43 @@
             transition: background-color 0.3s;
             width: 100%;
         }
-        button:hover {
+        .btn-primary:hover {
             background-color: #1557b0;
+        }
+        .btn-secondary {
+            background-color: #34a853;
+            color: white;
+            border: none;
+            padding: 10px 15px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 14px;
+            transition: background-color 0.3s;
+            margin: 5px;
+        }
+        .btn-secondary:hover {
+            background-color: #2d9047;
         }
         .result-section {
             margin-top: 25px;
             display: none;
             flex-direction: column;
             align-items: center;
+            border-top: 1px solid #eee;
+            padding-top: 20px;
         }
         #qrcode {
             margin: 20px 0;
-            padding: 10px;
+            padding: 15px;
             background: white;
-            border: 1px solid #eee;
+            border: 1px solid #ddd;
             border-radius: 8px;
+            display: inline-block;
         }
         .direct-link {
             word-break: break-all;
             background: #f8f9fa;
-            padding: 10px;
+            padding: 12px;
             border-radius: 5px;
             font-size: 13px;
             color: #333;
@@ -77,41 +97,67 @@
             box-sizing: border-box;
         }
         .error {
-            color: red;
+            color: #d93025;
             font-size: 14px;
             margin-top: 10px;
+            font-weight: bold;
+        }
+        .button-group {
+            display: flex;
+            justify-content: center;
+            gap: 10px;
+            width: 100%;
         }
     </style>
 </head>
 <body>
 
 <div class="container">
-    <h2>Tạo QR Code Tải GDrive</h2>
-    <p style="font-size: 14px; color: #555; margin-bottom: 20px;">Nhập link Google Drive của bạn (File phải được cấp quyền <strong>"Bất kỳ ai có liên kết"</strong>).</p>
+    <h2>Tạo QR Code GDrive (File/Folder)</h2>
+    <p style="font-size: 14px; color: #555; margin-bottom: 20px;">Hỗ trợ link File (tạo link tải trực tiếp) hoặc Thư mục (mở thư mục). File/Thư mục phải cấp quyền <strong>"Bất kỳ ai có liên kết"</strong>.</p>
     
     <input type="text" id="driveLink" placeholder="Dán link Google Drive vào đây...">
-    <button onclick="generateQR()">Tạo Mã QR</button>
+    <button class="btn-primary" onclick="generateQR()">Tạo Mã QR</button>
     <div id="errorMessage" class="error"></div>
 
     <div class="result-section" id="resultSection">
-        <p><strong>Link tải trực tiếp:</strong></p>
+        <p><strong id="linkTypeLabel">Link kết quả:</strong></p>
         <div class="direct-link" id="directLinkDisplay"></div>
-        <button onclick="copyLink()" style="background-color: #34a853; margin-bottom: 15px;">Copy Link</button>
-        <p><strong>Quét mã để tải:</strong></p>
+        
+        <div class="button-group">
+            <button class="btn-secondary" onclick="copyLink()">📋 Copy Link</button>
+            <button class="btn-secondary" onclick="openLink()" style="background-color: #fbbc05; color: #333;">🌐 Mở Link</button>
+        </div>
+
         <div id="qrcode"></div>
+        
+        <button class="btn-secondary" onclick="downloadQR()" style="background-color: #ea4335; width: 100%; max-width: 200px;">📥 Tải Ảnh QR</button>
     </div>
 </div>
 
 <script>
-    // Hàm trích xuất ID từ link GDrive
-    function getDriveFileId(url) {
-        let match = url.match(/\/d\/([a-zA-Z0-9_-]+)/);
-        if (match) return match[1];
-        
-        match = url.match(/id=([a-zA-Z0-9_-]+)/);
-        if (match) return match[1];
-        
-        return null;
+    // Hàm phân tích link GDrive để biết là File hay Folder
+    function parseDriveLink(url) {
+        // Kiểm tra xem có phải link Folder không
+        let folderMatch = url.match(/\/folders\/([a-zA-Z0-9_-]+)/);
+        if (folderMatch) {
+            return { type: 'folder', id: folderMatch[1] };
+        }
+
+        // Kiểm tra xem có phải link File không
+        let fileMatch = url.match(/\/d\/([a-zA-Z0-9_-]+)/) || url.match(/\/file\/d\/([a-zA-Z0-9_-]+)/);
+        if (fileMatch) {
+            return { type: 'file', id: fileMatch[1] };
+        }
+
+        // Kiểm tra dạng query parameter (?id=...)
+        let idMatch = url.match(/[?&]id=([a-zA-Z0-9_-]+)/);
+        if (idMatch) {
+            // Thường link có ?id= là link file, nhưng cũng có thể là folder. Mặc định xử lý như file.
+            return { type: 'file', id: idMatch[1] };
+        }
+
+        return null; // Không hợp lệ
     }
 
     function generateQR() {
@@ -120,8 +166,9 @@
         const qrContainer = document.getElementById('qrcode');
         const directLinkDisplay = document.getElementById('directLinkDisplay');
         const errorMessage = document.getElementById('errorMessage');
+        const linkTypeLabel = document.getElementById('linkTypeLabel');
 
-        // Xóa thông báo lỗi và QR cũ
+        // Reset giao diện
         errorMessage.innerText = "";
         qrContainer.innerHTML = "";
         resultSection.style.display = 'none';
@@ -131,38 +178,78 @@
             return;
         }
 
-        const fileId = getDriveFileId(inputUrl);
+        const driveInfo = parseDriveLink(inputUrl);
 
-        if (!fileId) {
+        if (!driveInfo) {
             errorMessage.innerText = "Link Google Drive không hợp lệ. Vui lòng kiểm tra lại!";
             return;
         }
 
-        // Tạo link tải trực tiếp
-        const directUrl = `https://drive.google.com/uc?export=download&id=${fileId}`;
-        directLinkDisplay.innerText = directUrl;
+        let finalUrl = "";
+
+        // Xử lý tạo link theo loại (File hoặc Folder)
+        if (driveInfo.type === 'folder') {
+            finalUrl = `https://drive.google.com/drive/folders/${driveInfo.id}`;
+            linkTypeLabel.innerText = "Link truy cập Thư mục:";
+        } else {
+            finalUrl = `https://drive.google.com/uc?export=download&id=${driveInfo.id}`;
+            linkTypeLabel.innerText = "Link tải trực tiếp (File):";
+        }
+
+        directLinkDisplay.innerText = finalUrl;
 
         // Tạo mã QR
         new QRCode(qrContainer, {
-            text: directUrl,
-            width: 200,
-            height: 200,
+            text: finalUrl,
+            width: 220,
+            height: 220,
             colorDark : "#000000",
             colorLight : "#ffffff",
             correctLevel : QRCode.CorrectLevel.H
         });
 
-        // Hiển thị kết quả
+        // Hiển thị khu vực kết quả
         resultSection.style.display = 'flex';
     }
 
     function copyLink() {
-        const directLink = document.getElementById('directLinkDisplay').innerText;
-        navigator.clipboard.writeText(directLink).then(() => {
-            alert('Đã copy link tải trực tiếp!');
+        const link = document.getElementById('directLinkDisplay').innerText;
+        navigator.clipboard.writeText(link).then(() => {
+            alert('Đã copy link thành công!');
         }).catch(err => {
             console.error('Lỗi copy: ', err);
         });
+    }
+
+    function openLink() {
+        const link = document.getElementById('directLinkDisplay').innerText;
+        window.open(link, '_blank');
+    }
+
+    function downloadQR() {
+        const qrContainer = document.getElementById('qrcode');
+        // Thư viện qrcode.js tạo ra cả thẻ <canvas> và <img>, ta ưu tiên lấy thẻ <img> chứa base64
+        const img = qrContainer.querySelector('img');
+        const canvas = qrContainer.querySelector('canvas');
+
+        let imageUrl = '';
+
+        if (img && img.src) {
+            imageUrl = img.src;
+        } else if (canvas) {
+            imageUrl = canvas.toDataURL("image/png");
+        }
+
+        if (imageUrl) {
+            const downloadLink = document.createElement('a');
+            downloadLink.href = imageUrl;
+            downloadLink.download = 'GoogleDrive_QRCode.png';
+            document.body.appendChild(downloadLink);
+            downloadLink.click();
+            document.body.removeChild(downloadLink);
+        } else {
+            alert("Lỗi: Không tìm thấy hình ảnh QR code để tải.");
+        }
     }
 </script>
 
